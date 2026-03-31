@@ -1,0 +1,184 @@
+/* =========================================
+   1. SPOLEČNÝ ZÁKLAD 
+   ========================================= */
+.setup-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+    background-size: cover;
+    background-position: center;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.setup-modal {
+    padding: 40px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.setup-modal h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.setup-modal p {
+    margin-bottom: 35px;
+    line-height: 1.6;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.setup-btn {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 16px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(41, 128, 185, 0.3);
+}
+
+.setup-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(41, 128, 185, 0.5);
+    filter: brightness(1.1);
+}
+
+.setup-btn.secondary {
+    margin-top: 25px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.setup-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+/* =========================================
+   2. SQLCRAFT
+   ========================================= */
+.mc-theme {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+    background-size: cover;
+    font-family: '/fonts/Minecraft.ttf', 'Courier New', monospace;
+}
+
+.mc-theme .setup-modal {
+    background: #c6c6c6;
+    border: 4px solid #000;
+    box-shadow:
+        inset 4px 4px #fff,
+        inset -4px -4px #555;
+    border-radius: 0;
+}
+
+.mc-theme .setup-modal h1 {
+    color: #3f3f3f;
+    font-size: 1.5rem;
+    text-shadow: none;
+    margin-bottom: 10px;
+}
+
+.mc-theme .setup-modal p {
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.mc-theme .setup-btn {
+    background: #7c7c7c;
+    border: 3px solid #000;
+    color: white;
+    text-shadow: 2px 2px #3f3f3f;
+    box-shadow:
+        inset 3px 3px #bcbcbc,
+        inset -3px -3px #444;
+    font-family: inherit;
+}
+
+.mc-theme .setup-btn:hover {
+    background: #8c8c8c;
+    box-shadow:
+        inset 4px 4px #cfcfcf,
+        inset -4px -4px #333;
+}
+
+.mc-theme .setup-btn.secondary {
+    background: #5a5a5a;
+    margin-top: 20px;
+}
+
+/* =========================================
+   3. TULESCAPE
+   ========================================= */
+.tul-theme {
+    background: black;
+    background-image:
+        linear-gradient(rgba(0, 255, 0, 0.1) 50%, transparent 50%),
+        linear-gradient(90deg, rgba(0, 255, 0, 0.05), transparent 95%);
+    background-size:
+        100% 4px,
+        4px 100%;
+    font-family: 'Courier New', monospace;
+}
+
+.tul-theme .setup-modal {
+    background: #050505;
+    border: 2px solid #33ff33;
+    width: 500px;
+    box-shadow: 0 0 20px rgba(51, 255, 51, 0.4);
+    border-radius: 0;
+}
+
+.tul-theme .setup-modal h1 {
+    color: #33ff33;
+    font-size: 2rem;
+    text-shadow: 0 0 10px #33ff33;
+    margin-bottom: 20px;
+}
+
+.tul-theme .setup-modal p {
+    color: #aaffaa;
+    line-height: 1.6;
+    text-align: justify;
+    margin-bottom: 30px;
+}
+
+.tul-theme .setup-btn {
+    background: transparent;
+    border: 2px solid #33ff33;
+    color: #33ff33;
+    font-family: inherit;
+}
+
+.tul-theme .setup-btn:hover {
+    background: #33ff33;
+    color: black;
+    box-shadow: 0 0 15px #33ff33;
+}
+
+.tul-theme .setup-btn.secondary {
+    border-color: #555;
+    color: #555;
+    margin-top: 20px;
+}

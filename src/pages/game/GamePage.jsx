@@ -1,19 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import initSqlJs from 'sql.js';
-import './TULEscapeGame.css';
-import gameData from '../../data/TULEscape.json';
-import schema from '../../assets/TULEscape_scheme.png';
 import _ from 'lodash';
-import { supabase } from '../../supabaseClient';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-sql';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 import { sqlDictionary } from '../../data/sqlDictionary';
 import { useGameScore } from '../../hooks/useGameScore';
 import VictoryScreen from '../../components/VictoryScreen';
-import { useNavigate } from 'react-router-dom';
 
-export default function TULEscapeGame() {
+import './GamePage.css';
+
+export default function GamePage({ gameData }) {
+    const navigate = useNavigate();
+    const { score, registerMistake, registerHint, submitScene, resetScore } = useGameScore();
+
+    const defaultConfig = {
+        id: 'unknown',
+        theme: 'default-theme',
+        dbName: 'GenericSQL',
+        playerStatus: 'Hráč: Student',
+        loadingText: 'Načítám...',
+        assetFolder: 'default',
+        schemaImg: 'default.png',
+    };
+
+    const config = { ...defaultConfig, ...gameData.config };
+
     const [activeOverlay, setActiveOverlay] = useState('table');
     const [db, setDb] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
@@ -22,8 +36,6 @@ export default function TULEscapeGame() {
     const [query, setQuery] = useState('SEM PIŠ DOTAZY');
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
-    const { score, registerMistake, registerHint, submitScene, resetScore } = useGameScore();
-    const navigate = useNavigate();
     const [isGameFinished, setIsGameFinished] = useState(false);
 
     const toggleOverlay = (type) => {
@@ -31,7 +43,7 @@ export default function TULEscapeGame() {
     };
 
     useEffect(() => {
-        const editor = document.querySelector('.tul-input-area');
+        const editor = document.querySelector('.sql-editor');
         if (editor) {
             setTimeout(() => {
                 editor.scrollTop = editor.scrollHeight;
@@ -46,7 +58,7 @@ export default function TULEscapeGame() {
             database.run(gameData.insertScript);
             setDb(database);
         });
-    }, []);
+    }, [gameData]);
 
     const logQuery = async (queryData) => {
         const { error } = await supabase.from('query_logs').insert([
@@ -58,6 +70,7 @@ export default function TULEscapeGame() {
                 error: queryData.error || null,
             },
         ]);
+
         if (error) {
             console.error('Chyba při logování:', error.message);
         }
@@ -141,6 +154,7 @@ export default function TULEscapeGame() {
         setActiveOverlay('table');
         setError(null);
         setResult(null);
+
         let currentError = null;
         let isCorrect = false;
         db.run('BEGIN TRANSACTION;');
@@ -155,20 +169,24 @@ export default function TULEscapeGame() {
             if (statements.length > 1) {
                 throw new Error('Pouze jeden dotaz najednou!');
             }
+
             const res = db.exec(query);
             isCorrect = isSuccesful(res);
+
             if (isCorrect) {
-                if (currentScene - 1 === lastSuccessScene) {
+                if (currentScene - 1 == lastSuccessScene) {
                     setLastSuccessScene((prev) => prev + 1);
                     submitScene();
                 }
             } else {
                 registerMistake();
             }
+
+            setError(null);
             if (!_.isEqual(res, [])) {
                 setResult(res);
             } else {
-                currentError = 'Prázdný výsledek';
+                currentError = 'Nic tu není :/';
                 setError(currentError);
             }
             db.run('ROLLBACK;');
@@ -178,20 +196,22 @@ export default function TULEscapeGame() {
             setError(currentError);
             db.run('ROLLBACK;');
         }
+
         const queryData = {
-            gameName: 'TULEscape',
+            gameName: config.dbName,
             sceneId: currentScene,
             query: query,
             isCorrect: isCorrect,
             error: currentError,
         };
+
         logQuery(queryData);
     };
 
     const saveScoreToLeaderboard = async (playerName) => {
         const { error } = await supabase.from('leaderboard').insert([
             {
-                game_name: 'TULEscape',
+                game_name: config.dbName,
                 player_name: playerName,
                 score: score,
             },
@@ -204,28 +224,36 @@ export default function TULEscapeGame() {
         }
     };
 
-    if (!db) return <div className="tul-loading">Navazuji spojení se servery TUL...</div>;
+    const sceneStyle = {
+        backgroundImage: currSceneData.img
+            ? `url("${import.meta.env.BASE_URL}pageAssets/${config.assetFolder}/scenes/${currSceneData.img}")`
+            : 'none',
+        backgroundColor: '#f2f2c0',
+    };
+
+    if (!db) return <div className={`loading-screen ${config.theme}`}>{config.loadingText}</div>;
 
     return (
-        <div className="tul-page-container">
+        <div className={`game-page ${config.theme}`}>
             {isGameFinished && (
                 <VictoryScreen
                     score={score}
-                    gameName="TULEscape"
+                    gameName={config.dbName}
                     onRestart={handleRestart}
                     onBackToMenu={handleBackToMenu}
                     onSubmitScore={saveScoreToLeaderboard}
                 />
             )}
-            <div className="tul-side-toolbar">
-                <button className="tool-square" onClick={() => toggleOverlay('table')}>
+
+            <div className="side-toolbar">
+                <button className="tool-btn" onClick={() => toggleOverlay('table')}>
                     📊
                 </button>
-                <button className="tool-square" onClick={() => toggleOverlay('schema')}>
+                <button className="tool-btn" onClick={() => toggleOverlay('schema')}>
                     📜
                 </button>
                 <button
-                    className="tul-tool-square"
+                    className="tool-btn"
                     onClick={() => {
                         toggleOverlay('hint');
                         registerHint();
@@ -235,50 +263,16 @@ export default function TULEscapeGame() {
                 </button>
             </div>
 
-            <div className="tul-side-overlay">
-                <div className="tul-overlay-content">
-                    {activeOverlay === 'schema' && (
-                        <div className="tul-content-box">
-                            <h3>SCHÉMA SÍTĚ</h3>
-                            <img src={schema} alt="TUL Schema" className="tul-schema-img" />
-                        </div>
-                    )}
-                    {activeOverlay === 'hint' && (
-                        <div className="tul-content-box">
-                            <h3>NÁPOVĚDA</h3>
-                            {currSceneData.keywords && currSceneData.keywords.length > 0 ? (
-                                <div className="hint-content">
-                                    <p className="hint-intro">
-                                        K vyřešení tohoto úkolu zkus použít tyto příkazy:
-                                    </p>
-
-                                    <ul className="keyword-list">
-                                        {currSceneData.keywords.map((keyword, index) => (
-                                            <li key={index} className="hint-item">
-                                                <strong className="hint-keyword">{keyword}</strong>
-                                                <span className="hint-definition">
-                                                    {sqlDictionary[keyword] ||
-                                                        ' - (Definice chybí)'}
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ) : (
-                                <p className="hint-text">
-                                    Pro tuto úroveň není k dispozici žádná speciální nápověda.
-                                </p>
-                            )}
-                        </div>
-                    )}
+            <div className="side-overlay">
+                <div className="overlay-content">
                     {activeOverlay === 'table' && (
-                        <div className="tul-content-box">
-                            <h3>VÝSTUP TERMINÁLU</h3>
+                        <div className="content-box">
+                            <h3>VÝSLEDEK DOTAZU</h3>
                             {error ? (
-                                <div className="tul-error-msg">{error}</div>
+                                <div className="error-box">{error}</div>
                             ) : result ? (
-                                <div className="tul-table-wrapper">
-                                    <table className="tul-table">
+                                <div className="table-wrapper">
+                                    <table>
                                         <thead>
                                             <tr>
                                                 {result[0].columns.map((c) => (
@@ -302,48 +296,95 @@ export default function TULEscapeGame() {
                             )}
                         </div>
                     )}
+
+                    {activeOverlay === 'schema' && (
+                        <div className="content-box">
+                            <h3>SCHÉMA</h3>
+                            {config.schemaImg ? (
+                                <img
+                                    src={`${import.meta.env.BASE_URL}assets/${config.schemaImg}`}
+                                    alt="Schema"
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        padding: '20px',
+                                        border: '2px dashed #666',
+                                        textAlign: 'center',
+                                        color: '#666',
+                                    }}
+                                >
+                                    <p>Dokumentace k této databázi nebyla nalezena.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeOverlay === 'hint' && (
+                        <div className="content-box">
+                            <h3>NÁPOVĚDA</h3>
+                            {currSceneData.keywords && currSceneData.keywords.length > 0 ? (
+                                <div className="hint-content">
+                                    <p className="hint-intro">
+                                        K vyřešení tohoto úkolu zkus použít tyto příkazy:
+                                    </p>
+                                    <ul className="keyword-list">
+                                        {currSceneData.keywords.map((keyword, index) => (
+                                            <li key={index} className="hint-item">
+                                                <strong className="hint-keyword">{keyword}</strong>
+                                                <span className="hint-definition">
+                                                    {sqlDictionary[keyword] ||
+                                                        ' - (Definice chybí)'}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : (
+                                <p className="hint-text">
+                                    Pro tuto úroveň není k dispozici žádná speciální nápověda.
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
-            <div
-                className="tul-game-screen"
-                style={{
-                    backgroundImage: `url("${import.meta.env.BASE_URL}pageAssets/TULEscape/scenes/${currSceneData.img}")`,
-                }}
-            >
-                <div className="tul-info-bar">
-                    <span>Uživatel: ladislav.jira</span> | <span>Status: INFILTRATED</span> |{' '}
-                    <span>Skóre: {score}</span>
+
+            <div className="main-viewport" style={sceneStyle}>
+                <div className="info-bar">
+                    <span>{config.playerStatus}</span> | <span>Skóre: {score}</span>
                 </div>
 
-                {currentScene > 1 && (
-                    <button className="tul-previous-scene" onClick={prevScene}>
-                        ◀
-                    </button>
-                )}
+                <div className="navigation">
+                    {currentScene > 1 && (
+                        <button className="prev-btn" onClick={prevScene}>
+                            ◀
+                        </button>
+                    )}
+                    {currentScene <= lastSuccessScene && (
+                        <button className="next-btn" onClick={nextScene}>
+                            {currentScene === gameData.number_of_scenes ? ' DOKONČIT HRU ' : '▶'}
+                        </button>
+                    )}
+                </div>
 
-                {currentScene <= lastSuccessScene && (
-                    <button className="tul-next-scene" onClick={nextScene}>
-                        {currentScene === gameData.number_of_scenes ? ' DOKONČIT HRU ' : '▶'}
-                    </button>
-                )}
-
-                <div className="tul-task-book">
-                    <h3>MISE {currSceneData.id}</h3>
+                <div className="task-container">
+                    <h3>Úkol {currSceneData.id}</h3>
                     <p>{currSceneData.story}</p>
-                    <p className="tul-prompt">
-                        <small>&gt; {currSceneData.prompt}</small>
+                    <p>
+                        <small>{currSceneData.prompt}</small>
                     </p>
                 </div>
 
-                <div className="tul-bottom-area">
+                <div className="editor-section">
                     <Editor
                         value={query}
                         onValueChange={(code) => setQuery(code)}
                         highlight={(code) => highlight(code, languages.sql)}
                         padding={15}
-                        className="tul-input-area"
+                        className="sql-editor"
                     />
-                    <button onClick={runSql} className="tul-send-btn">
+                    <button className="execute-btn" onClick={runSql}>
                         PROVÉST DOTAZ
                     </button>
                 </div>
