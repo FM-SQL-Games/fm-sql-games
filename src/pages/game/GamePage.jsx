@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import initSqlJs from 'sql.js';
-import _ from 'lodash';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-sql';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { preprocessQuery, isSuccessful } from '../../utils/sqlValidator';
+import { initDatabase, executeSafeQuery } from '../../utils/dbHandler';
+import { logQueryToSupabase, saveLeaderboardScore } from '../../utils/supabaseLogger';
 import { sqlDictionary } from '../../data/sqlDictionary';
 import { useGameScore } from '../../hooks/useGameScore';
 import VictoryScreen from '../../components/VictoryScreen';
@@ -52,59 +52,9 @@ export default function GamePage({ gameData }) {
     }, [query]);
 
     useEffect(() => {
-        initSqlJs({ locateFile: (f) => `${import.meta.env.BASE_URL}${f}` }).then((SQL) => {
-            const database = new SQL.Database();
-            database.run(gameData.createScript);
-            database.run(gameData.insertScript);
-            setDb(database);
-        });
+        initDatabase(gameData.createScript, gameData.insertScript)
+            .then(database => setDb(database));
     }, [gameData]);
-
-    const logQuery = async (queryData) => {
-        const { error } = await supabase.from('query_logs').insert([
-            {
-                game_name: queryData.gameName,
-                scene_id: queryData.sceneId,
-                query: queryData.query,
-                is_correct: queryData.isCorrect,
-                error: queryData.error || null,
-            },
-        ]);
-
-        if (error) {
-            console.error('Chyba při logování:', error.message);
-        }
-    };
-
-    const isSuccesful = (res) => {
-        let trimmedUser = query.toLowerCase().trim();
-        let trimmedAnswer = currSceneData.answer.toLowerCase().trim();
-        if (!trimmedUser.endsWith(';')) {
-            trimmedUser += ';';
-        }
-        if (trimmedUser == trimmedAnswer) {
-            return true;
-        }
-        const sceneConfirmTable = db.exec(currSceneData.answer);
-
-        if (!res || res.length === 0 || !sceneConfirmTable || sceneConfirmTable.length === 0) {
-            return false;
-        }
-
-        if (res[0].columns.length !== sceneConfirmTable[0].columns.length) {
-            return false;
-        }
-
-        if (res[0].values.length !== sceneConfirmTable[0].values.length) {
-            return false;
-        }
-        
-        if (_.isEqual(res[0].values, sceneConfirmTable[0].values)) {
-            
-            return true;
-        }
-        return false;
-    };
 
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
@@ -132,25 +82,6 @@ export default function GamePage({ gameData }) {
         navigate('/');
     };
 
-    const badWords = [
-        'drop',
-        'delete',
-        'insert',
-        'update',
-        'alter',
-        'truncate',
-        'grant',
-        'commit',
-        'rollback',
-        'pragma',
-        'attach',
-        'replace',
-        'upsert',
-        'vacuum',
-        'detach',
-        'begin',
-    ];
-
     const runSql = () => {
         setActiveOverlay('table');
         setError(null);
@@ -158,21 +89,17 @@ export default function GamePage({ gameData }) {
 
         let currentError = null;
         let isCorrect = false;
-        db.run('BEGIN TRANSACTION;');
         try {
-            if (badWords.some((word) => query.toLowerCase().includes(word))) {
-                throw new Error('Ve tvém dotazu jsou nějaká nehezká slova!');
-            }
-            const statements = query
-                .split(';')
-                .map((s) => s.trim())
-                .filter((s) => s.length > 0);
-            if (statements.length > 1) {
-                throw new Error('Pouze jeden dotaz najednou!');
-            }
+            const cleanQuery = preprocessQuery(query);
 
-            const res = db.exec(query);
-            isCorrect = isSuccesful(res);
+            const { res, error: dbError } = executeSafeQuery(db, cleanQuery);
+            if (dbError){
+                throw new Error(dbError);
+            } 
+
+            const referenceRes = db.exec(currSceneData.answer);
+
+            isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
 
             if (isCorrect) {
                 if (currentScene - 1 == lastSuccessScene) {
@@ -183,46 +110,33 @@ export default function GamePage({ gameData }) {
                 registerMistake();
             }
 
-            setError(null);
-            if (!_.isEqual(res, [])) {
+            if (res && res.length > 0) {
                 setResult(res);
+            } else if (isCorrect) {
+                setError(null); 
+                setResult(null);
             } else {
-                currentError = 'Nic tu není :/';
+                currentError = 'Dotaz nevrátil žádná data.';
                 setError(currentError);
             }
-            db.run('ROLLBACK;');
+            
         } catch (e) {
             registerMistake();
             currentError = e.message;
             setError(currentError);
-            db.run('ROLLBACK;');
         }
 
-        const queryData = {
+        logQueryToSupabase({
             gameName: config.dbName,
             sceneId: currentScene,
             query: query,
             isCorrect: isCorrect,
-            error: currentError,
-        };
-
-        logQuery(queryData);
+            error: currentError
+        });
     };
 
-    const saveScoreToLeaderboard = async (playerName) => {
-        const { error } = await supabase.from('leaderboard').insert([
-            {
-                game_name: config.dbName,
-                player_name: playerName,
-                score: score,
-            },
-        ]);
-
-        if (error) {
-            console.error('Chyba při ukládání skóre:', error.message);
-        } else {
-            console.log('Skóre úspěšně uloženo do žebříčku!');
-        }
+    const saveScoreToLeaderboard = (playerName) => {
+        saveLeaderboardScore(config.dbName, playerName, score);
     };
 
     const sceneStyle = {
