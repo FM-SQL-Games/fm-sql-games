@@ -98,8 +98,9 @@ export default function GamePage({ gameData }) {
         if (res[0].values.length !== sceneConfirmTable[0].values.length) {
             return false;
         }
-
-        if (_.isEqual(res.values, sceneConfirmTable.values)) {
+        
+        if (_.isEqual(res[0].values, sceneConfirmTable[0].values)) {
+            
             return true;
         }
         return false;
