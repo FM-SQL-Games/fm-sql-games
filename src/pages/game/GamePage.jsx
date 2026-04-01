@@ -31,7 +31,7 @@ export default function GamePage({ gameData }) {
     const [activeOverlay, setActiveOverlay] = useState('table');
     const [db, setDb] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
-    const [lastSuccessScene, setLastSuccessScene] = useState(0);
+    const [lastSuccessScene, setLastSuccessScene] = useState(5);
     const currSceneData = gameData.scenes[currentScene - 1];
     const [query, setQuery] = useState('SEM PIŠ DOTAZY');
     const [result, setResult] = useState(null);
@@ -98,8 +98,9 @@ export default function GamePage({ gameData }) {
         if (res[0].values.length !== sceneConfirmTable[0].values.length) {
             return false;
         }
-
-        if (_.isEqual(res.values, sceneConfirmTable.values)) {
+        
+        if (_.isEqual(res[0].values, sceneConfirmTable[0].values)) {
+            
             return true;
         }
         return false;
