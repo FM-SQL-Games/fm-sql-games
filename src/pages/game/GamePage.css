@@ -1,0 +1,372 @@
+/* =========================================
+   1. BASE STYLES & LAYOUT
+   ========================================= */
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.game-page {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.side-toolbar {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 200;
+}
+
+.tool-btn {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: #8b8b8b;
+    border: 2px solid #000;
+    box-shadow:
+        inset -2px -2px #555,
+        inset 2px 2px #dbdbdb;
+}
+
+.side-overlay {
+    width: 45%;
+    min-width: 350px;
+    height: 100%;
+    background: #c6c6c6;
+    border-right: 4px solid #000;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 20px 60px;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.overlay-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.content-box h3 {
+    border-bottom: 2px solid #777;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.content-box img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 2px solid #000;
+    background: white;
+}
+
+.main-viewport {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    margin: 0 auto;
+    width: fit-content;
+    min-width: 600px;
+    background: #c6c6c6;
+    color: #fff;
+    border: 4px solid #000;
+    border-top: none;
+    box-shadow:
+        inset -4px -4px #555,
+        inset 4px 0px #fff;
+    text-shadow: 2px 2px #3f3f3f;
+}
+
+.task-container {
+    position: absolute;
+    width: 48%;
+    top: 25%;
+    left: 25%;
+    padding: 20px;
+    background: #f1f1f1;
+    border: 4px solid #000;
+    color: #222;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+}
+
+.task-container h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 5px;
+}
+.editor-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.sql-editor {
+    width: 48%;
+    height: 150px !important;
+    background: #000 !important;
+    border: 4px solid #555;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    box-sizing: border-box;
+    overflow: auto !important;
+}
+
+.sql-editor textarea,
+.sql-editor pre {
+    color: #fff !important;
+    background: transparent !important;
+    caret-color: #fff;
+}
+
+.execute-btn {
+    display: block;
+    width: 50%;
+    padding: 15px;
+    background: #7c7c7c;
+    border: 3px solid #000;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-shadow: 2px 2px #3f3f3f;
+    box-shadow:
+        inset 3px 3px #bcbcbc,
+        inset -3px -3px #444;
+}
+
+.navigation button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 50px;
+    height: 50px;
+    background-color: #8b8b8b;
+    border: 4px solid #000;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow:
+        inset -4px -4px #555,
+        inset 4px 4px #dbdbdb;
+}
+.navigation .prev-btn {
+    left: 20px;
+    top: 20%;
+}
+.navigation .next-btn {
+    right: 20px;
+    top: 20%;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow: auto;
+    transform: rotateX(180deg);
+    border: 2px solid #555;
+}
+.table-wrapper table {
+    min-width: 100%;
+    border-collapse: collapse;
+    background: white;
+    color: black;
+    transform: rotateX(180deg);
+}
+.table-wrapper th {
+    background: #7c7c7c;
+    color: white;
+    border: 2px solid #000;
+    padding: 10px;
+}
+.table-wrapper td {
+    border: 2px solid #000;
+    padding: 10px;
+}
+
+/* =========================================
+   2. THEME: TULESCAPE (.tul-theme)
+   ========================================= */
+.tul-theme {
+    font-family: 'Courier New', monospace;
+}
+
+.tul-theme .content-box h3 {
+    border-bottom: 2px solid #33ff33;
+}
+
+.tul-theme .info-bar {
+    background: #111;
+    color: #33ff33;
+    border: 4px solid #33ff33;
+    box-shadow:
+        inset -4px -4px #000,
+        inset 4px 0px #333;
+}
+
+.tul-theme .task-container {
+    background: #000;
+    border: 4px solid #33ff33;
+    color: #eee;
+    box-shadow: 5px 5px 0 rgba(51, 255, 51, 0.2);
+}
+
+.tul-theme .task-container h3 {
+    border-bottom: 2px solid #33ff33;
+    color: #33ff33;
+}
+
+.tul-theme .sql-editor textarea {
+    color: #33ff33 !important;
+    caret-color: #33ff33;
+}
+
+.tul-theme .execute-btn {
+    background: #111;
+    border: 3px solid #33ff33;
+    color: #33ff33;
+    box-shadow:
+        inset 3px 3px #333,
+        inset -3px -3px #000;
+}
+
+.tul-theme .table-wrapper {
+    border: 2px solid #33ff33;
+}
+.tul-theme .table-wrapper table {
+    background: #000;
+    color: #33ff33;
+}
+.tul-theme .table-wrapper th {
+    border: 2px solid #33ff33;
+    background: #1a1a1a;
+}
+.tul-theme .table-wrapper td {
+    border: 2px solid #33ff33;
+}
+
+.tul-theme .navigation button {
+    background-color: #111;
+    border: 4px solid #33ff33;
+    color: #33ff33;
+    box-shadow:
+        inset -4px -4px #000,
+        inset 4px 4px #222;
+}
+
+/* =========================================
+   3. SCROLLBARY (Společné + Téma)
+   ========================================= */
+.overlay-content::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar,
+.sql-editor::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+.overlay-content::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track,
+.sql-editor::-webkit-scrollbar-track {
+    background: #333;
+}
+.overlay-content::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb,
+.sql-editor::-webkit-scrollbar-thumb {
+    background: #33ff33;
+    border: 2px solid #000;
+}
+
+.tul-theme .overlay-content::-webkit-scrollbar-track {
+    background: #333;
+}
+.tul-theme .overlay-content::-webkit-scrollbar-thumb {
+    background: #33ff33;
+}
+
+/* =========================================
+   4. SYNTAX & HINTS
+   ========================================= */
+.token.keyword {
+    color: #55ff55 !important;
+    font-weight: bold;
+}
+.token.string {
+    color: #ffff55 !important;
+}
+.token.function {
+    color: #55ffff !important;
+}
+.token.number {
+    color: #ff55ff !important;
+}
+
+.hint-intro {
+    margin-bottom: 15px;
+    font-style: italic;
+    color: #111;
+}
+.keyword-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.hint-item {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+.hint-keyword {
+    background-color: #2b2b2b;
+    color: #ff9d00;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    margin-right: 8px;
+    border: 1px solid #444;
+    display: inline-block;
+}
+
+.error-box {
+    background: #ff5555;
+    color: white;
+    padding: 10px;
+    border: 3px solid #000;
+    margin: 10px 0;
+}
+.tul-theme .error-box {
+    background: #200;
+    color: #ff3333;
+    border-color: #ff3333;
+}

@@ -1,23 +1,7 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
-
-const games = [
-    {
-        id: 'sqlcraft',
-        title: 'SQL Craft',
-        description: 'Sestav diamantový meč v kostičkovém světě pomocí SQL dotazů.',
-        image: 'pageAssets/SQLCraft/scenes/20.jpg',
-        active: true,
-    },
-    {
-        id: 'tulescape',
-        title: 'Escape from TUL',
-        description:
-            'Oprav s pomocí SQL dotazů svou diplomovou práci a unikni z informačního systému.',
-        image: 'pageAssets/TULEscape/scenes/1.jpg',
-        active: true,
-    },
-];
+import { gameLibrary } from '../data/gameLibrary';
 
 function Home() {
     return (
@@ -27,23 +11,29 @@ function Home() {
                 <p>Vyber si hru a začni se učit!</p>
             </header>
             <div className="game-grid">
-                {games.map((game) => (
-                    <div key={game.id} className={`game-card ${!game.active ? 'disabled' : ''}`}>
-                        <Link to={game.active ? `/${game.id}` : '#'}>
+                {gameLibrary.map((game) => (
+                    <div
+                        key={game.config.id}
+                        className={`game-card ${game.config.active === false ? 'disabled' : ''}`}
+                    >
+                        <Link to={game.config.active !== false ? `/${game.config.id}` : '#'}>
                             <div className="card-content">
                                 <div
                                     className="card-image"
                                     style={{
-                                        backgroundImage: `url("${game.image}")`,
+                                        backgroundImage: game.config.cardImage
+                                            ? `url("${import.meta.env.BASE_URL}${game.config.cardImage}")`
+                                            : 'linear-gradient(135deg, #2c3e50, #000)',
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
-                                        imageRendering: 'pixelated',
+                                        imageRendering: 'auto',
+                                        backgroundColor: '#1a1a1a',
                                     }}
                                 ></div>
-                                <h2>{game.title}</h2>
-                                <p>{game.description}</p>
+                                <h2>{game.config.title}</h2>
+                                <p>{game.config.description}</p>
                                 <span className="play-button">
-                                    {game.active ? 'HRÁT' : 'JIŽ BRZY'}
+                                    {game.config.active !== false ? 'HRÁT' : 'JIŽ BRZY'}
                                 </span>
                             </div>
                         </Link>
