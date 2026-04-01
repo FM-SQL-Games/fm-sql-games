@@ -31,7 +31,7 @@ export default function GamePage({ gameData }) {
     const [activeOverlay, setActiveOverlay] = useState('table');
     const [db, setDb] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
-    const [lastSuccessScene, setLastSuccessScene] = useState(5);
+    const [lastSuccessScene, setLastSuccessScene] = useState(0);
     const currSceneData = gameData.scenes[currentScene - 1];
     const [query, setQuery] = useState('SEM PIŠ DOTAZY');
     const [result, setResult] = useState(null);
