@@ -25,7 +25,7 @@ export default function GamePage({ gameData }) {
         assetFolder: 'default',
         schemaImg: 'default.png',
     };
-
+    
     const config = { ...defaultConfig, ...gameData.config };
 
     const [activeOverlay, setActiveOverlay] = useState('table');
@@ -37,6 +37,7 @@ export default function GamePage({ gameData }) {
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [isGameFinished, setIsGameFinished] = useState(false);
+    const [succesfulAnwsersArray, setSuccesfulAnwsersArray] = useState(Array(gameData.number_of_scenes).fill(''));
 
     const toggleOverlay = (type) => {
         setActiveOverlay(type);
@@ -60,12 +61,15 @@ export default function GamePage({ gameData }) {
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
+            setQuery(succesfulAnwsersArray[currentScene])
             setCurrentScene((prev) => prev + 1);
         }
     }
 
     function prevScene() {
+        setQuery(succesfulAnwsersArray[currentScene-2])
         setCurrentScene((prev) => prev - 1);
+
     }
 
     const handleRestart = () => {
@@ -102,6 +106,9 @@ export default function GamePage({ gameData }) {
             isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
 
             if (isCorrect) {
+                const newArray = [...succesfulAnwsersArray]
+                newArray[currentScene - 1] = query
+                setSuccesfulAnwsersArray(newArray)
                 if (currentScene - 1 == lastSuccessScene) {
                     setLastSuccessScene((prev) => prev + 1);
                     submitScene();
@@ -298,6 +305,7 @@ export default function GamePage({ gameData }) {
                         highlight={(code) => highlight(code, languages.sql)}
                         padding={15}
                         className="sql-editor"
+                        onFocus={() => {if(query==="SEM PIŠ DOTAZY"){setQuery('')}}}
                     />
                     <button className="execute-btn" onClick={runSql}>
                         PROVÉST DOTAZ
