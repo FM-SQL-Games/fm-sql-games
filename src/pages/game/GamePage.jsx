@@ -274,7 +274,7 @@ export default function GamePage({ gameData }) {
 
             <div className="main-viewport" style={sceneStyle}>
                 <div className="info-bar">
-                    <span>{config.playerStatus}</span> | <span>Skóre: {score}</span>
+                    <span>{config.playerStatus}</span> | <span>Scéna: {currentScene}/{gameData.number_of_scenes}</span> | <span>Skóre: {score}</span>
                 </div>
 
                 <div className="navigation">
