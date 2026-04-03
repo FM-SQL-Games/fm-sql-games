@@ -28,7 +28,7 @@ export default function GamePage({ gameData }) {
     
     const config = { ...defaultConfig, ...gameData.config };
 
-    const [activeOverlay, setActiveOverlay] = useState('table');
+    const [activeOverlay, setActiveOverlay] = useState('schema');
     const [db, setDb] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
     const [lastSuccessScene, setLastSuccessScene] = useState(0);
@@ -84,6 +84,10 @@ export default function GamePage({ gameData }) {
 
     const handleBackToMenu = () => {
         navigate('/');
+    };
+
+    const handleBackToSetup = () =>{
+        navigate(`/${config.id}`)
     };
 
     const runSql = () => {
@@ -146,6 +150,8 @@ export default function GamePage({ gameData }) {
         saveLeaderboardScore(config.dbName, playerName, score);
     };
 
+    
+
     const sceneStyle = {
         backgroundImage: currSceneData.img
             ? `url("${import.meta.env.BASE_URL}pageAssets/${config.assetFolder}/scenes/${currSceneData.img}")`
@@ -167,25 +173,27 @@ export default function GamePage({ gameData }) {
                 />
             )}
 
-            <div className="side-toolbar">
-                <button className="tool-btn" onClick={() => toggleOverlay('table')}>
-                    📊
-                </button>
-                <button className="tool-btn" onClick={() => toggleOverlay('schema')}>
-                    📜
-                </button>
-                <button
-                    className="tool-btn"
-                    onClick={() => {
-                        toggleOverlay('hint');
-                        registerHint();
-                    }}
-                >
-                    💡
-                </button>
-            </div>
+            
 
             <div className="side-overlay">
+                <div className='tabs-container'>
+                    <button className='back-btn' onClick={()=>{handleBackToSetup()}}>&#8617; Zpět</button>
+                    <button className={`tool-btn ${activeOverlay === 'table' ? 'active' : ''}`} onClick={() => toggleOverlay('table')}>
+                        📊 Tabulka
+                    </button>
+                    <button className={`tool-btn ${activeOverlay === 'schema' ? 'active' : ''}`} onClick={() => toggleOverlay('schema')}>
+                        📜 Schéma
+                    </button>
+                    <button
+                        className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''}`}
+                        onClick={() => {
+                            toggleOverlay('hint');
+                            registerHint();
+                        }}
+                    >
+                        💡 Nápověda
+                    </button>
+                </div>
                 <div className="overlay-content">
                     {activeOverlay === 'table' && (
                         <div className="content-box">
@@ -271,7 +279,7 @@ export default function GamePage({ gameData }) {
                     )}
                 </div>
             </div>
-
+                    
             <div className="main-viewport" style={sceneStyle}>
                 <div className="info-bar">
                     <span>{config.playerStatus}</span> | <span>Scéna: {currentScene}/{gameData.number_of_scenes}</span> | <span>Skóre: {score}</span>

@@ -19,32 +19,6 @@ body,
     overflow: hidden;
 }
 
-.side-toolbar {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 200;
-}
-
-.tool-btn {
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    background: #8b8b8b;
-    border: 2px solid #000;
-    box-shadow:
-        inset -2px -2px #555,
-        inset 2px 2px #dbdbdb;
-}
-
 .side-overlay {
     width: 45%;
     min-width: 350px;
@@ -53,12 +27,12 @@ body,
     border-right: 4px solid #000;
     display: flex;
     flex-direction: column;
-    padding: 20px 20px 20px 60px;
     box-sizing: border-box;
     z-index: 100;
 }
 
 .overlay-content {
+    padding: 20px 20px 20px 60px;
     flex-grow: 1;
     overflow-y: auto;
     overflow-x: hidden;
@@ -215,6 +189,63 @@ body,
 .table-wrapper td {
     border: 2px solid #000;
     padding: 10px;
+}
+
+.tabs-container {
+    display: flex;
+    align-items: flex-end; 
+    border-bottom: 2px solid #555; 
+    padding: 10px 10px 0 10px;
+    gap: 4px;
+    background-color: #a0a0a0; 
+}
+
+
+.back-btn {
+    margin-right: auto; 
+    margin-bottom: 6px;
+    padding: 6px 12px;
+    background-color: #555;
+    color: white;
+    border: 2px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+    background-color: #333;
+}
+
+.tool-btn {
+    padding: 10px 50px;
+    background-color: #b0b0b0;
+    border: 2px solid #555;
+    border-bottom: none; 
+    border-radius: 10px 10px 0 0; 
+    cursor: pointer;
+    font-weight: bold;
+    color: #333;
+    font-family: inherit;
+    transform: translateY(2px); 
+}
+
+.tool-btn:hover {
+    background-color: #c0c0c0;
+}
+
+.tool-btn.active {
+    background-color: #c6c6c6; 
+    border-bottom: 2px solid #c6c6c6; 
+    color: #000;
+    z-index: 10; 
+}
+
+.overlay-content {
+    background-color: #c6c6c6; 
+    height: 100%;
 }
 
 /* =========================================
