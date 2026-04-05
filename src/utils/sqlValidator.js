@@ -59,9 +59,9 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes) =
     const uTab = userRes[0];
     const rTab = referenceRes[0];
 
-    if (uTab.columns.length !== rTab.columns.length){
+    if (uTab.columns.length !== rTab.columns.length) {
         return false;
-    } 
+    }
     if (uTab.values.length !== rTab.values.length) {
         return false;
     }

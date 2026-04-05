@@ -75,6 +75,45 @@
     border-color: white;
 }
 
+.player-input-section {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.player-input-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.player-input-section input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.player-input-section input:focus {
+    border-color: #3498db;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.setup-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+    transform: none !important;
+}
+
 /* =========================================
    2. SQLCRAFT
    ========================================= */
@@ -126,6 +165,27 @@
 .mc-theme .setup-btn.secondary {
     background: #5a5a5a;
     margin-top: 20px;
+}
+
+.mc-theme .player-input-section label {
+    color: #555;
+    font-family: inherit;
+    text-transform: none;
+}
+
+.mc-theme .player-input-section input {
+    border-radius: 0;
+    border: 4px solid #000;
+    background: #fff;
+    color: #3f3f3f;
+    font-family: inherit;
+    box-shadow:
+        inset -4px -4px #bcbcbc,
+        inset 4px 4px #555;
+}
+
+.mc-theme .player-input-section input:focus {
+    background: #e0e0e0;
 }
 
 /* =========================================
@@ -181,4 +241,26 @@
     border-color: #555;
     color: #555;
     margin-top: 20px;
+}
+
+.tul-theme .player-input-section label {
+    color: #33ff33;
+    font-family: inherit;
+}
+
+.tul-theme .player-input-section input {
+    border-radius: 0;
+    border: 2px solid #33ff33;
+    background: black;
+    color: #33ff33;
+    font-family: inherit;
+    box-shadow: inset 0 0 5px rgba(51, 255, 51, 0.2);
+}
+
+.tul-theme .player-input-section input:focus {
+    box-shadow: 0 0 10px #33ff33;
+}
+
+.tul-theme .player-input-section input::placeholder {
+    color: rgba(51, 255, 51, 0.3);
 }

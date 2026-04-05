@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-sql';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { preprocessQuery, isSuccessful } from '../../utils/sqlValidator';
 import { initDatabase, executeSafeQuery } from '../../utils/dbHandler';
 import { logQueryToSupabase, saveLeaderboardScore } from '../../utils/supabaseLogger';
@@ -14,18 +14,21 @@ import './GamePage.css';
 
 export default function GamePage({ gameData }) {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const playerName = location.state?.playerName || 'Host';
+
     const { score, registerMistake, registerHint, submitScene, resetScore } = useGameScore();
 
     const defaultConfig = {
         id: 'unknown',
         theme: 'default-theme',
         dbName: 'GenericSQL',
-        playerStatus: 'Hráč: Student',
         loadingText: 'Načítám...',
         assetFolder: 'default',
         schemaImg: 'default.png',
     };
-    
+
     const config = { ...defaultConfig, ...gameData.config };
 
     const [activeOverlay, setActiveOverlay] = useState('schema');
@@ -37,7 +40,9 @@ export default function GamePage({ gameData }) {
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [isGameFinished, setIsGameFinished] = useState(false);
-    const [succesfulAnwsersArray, setSuccesfulAnwsersArray] = useState(Array(gameData.number_of_scenes).fill(''));
+    const [succesfulAnwsersArray, setSuccesfulAnwsersArray] = useState(
+        Array(gameData.number_of_scenes).fill('')
+    );
 
     const toggleOverlay = (type) => {
         setActiveOverlay(type);
@@ -53,23 +58,23 @@ export default function GamePage({ gameData }) {
     }, [query]);
 
     useEffect(() => {
-        initDatabase(gameData.createScript, gameData.insertScript)
-            .then(database => setDb(database));
+        initDatabase(gameData.createScript, gameData.insertScript).then((database) =>
+            setDb(database)
+        );
     }, [gameData]);
 
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
-            setQuery(succesfulAnwsersArray[currentScene])
+            setQuery(succesfulAnwsersArray[currentScene]);
             setCurrentScene((prev) => prev + 1);
         }
     }
 
     function prevScene() {
-        setQuery(succesfulAnwsersArray[currentScene-2])
+        setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
-
     }
 
     const handleRestart = () => {
@@ -86,8 +91,8 @@ export default function GamePage({ gameData }) {
         navigate('/');
     };
 
-    const handleBackToSetup = () =>{
-        navigate(`/${config.id}`)
+    const handleBackToSetup = () => {
+        navigate(`/${config.id}`);
     };
 
     const runSql = () => {
@@ -101,18 +106,18 @@ export default function GamePage({ gameData }) {
             const cleanQuery = preprocessQuery(query);
 
             const { res, error: dbError } = executeSafeQuery(db, cleanQuery);
-            if (dbError){
+            if (dbError) {
                 throw new Error(dbError);
-            } 
+            }
 
             const referenceRes = db.exec(currSceneData.answer);
 
             isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
 
             if (isCorrect) {
-                const newArray = [...succesfulAnwsersArray]
-                newArray[currentScene - 1] = query
-                setSuccesfulAnwsersArray(newArray)
+                const newArray = [...succesfulAnwsersArray];
+                newArray[currentScene - 1] = query;
+                setSuccesfulAnwsersArray(newArray);
                 if (currentScene - 1 == lastSuccessScene) {
                     setLastSuccessScene((prev) => prev + 1);
                     submitScene();
@@ -124,13 +129,12 @@ export default function GamePage({ gameData }) {
             if (res && res.length > 0) {
                 setResult(res);
             } else if (isCorrect) {
-                setError(null); 
+                setError(null);
                 setResult(null);
             } else {
                 currentError = 'Dotaz nevrátil žádná data.';
                 setError(currentError);
             }
-            
         } catch (e) {
             registerMistake();
             currentError = e.message;
@@ -142,15 +146,13 @@ export default function GamePage({ gameData }) {
             sceneId: currentScene,
             query: query,
             isCorrect: isCorrect,
-            error: currentError
+            error: currentError,
         });
     };
 
     const saveScoreToLeaderboard = (playerName) => {
         saveLeaderboardScore(config.dbName, playerName, score);
     };
-
-    
 
     const sceneStyle = {
         backgroundImage: currSceneData.img
@@ -167,21 +169,33 @@ export default function GamePage({ gameData }) {
                 <VictoryScreen
                     score={score}
                     gameName={config.dbName}
+                    playerName={playerName}
                     onRestart={handleRestart}
                     onBackToMenu={handleBackToMenu}
                     onSubmitScore={saveScoreToLeaderboard}
                 />
             )}
 
-            
-
             <div className="side-overlay">
-                <div className='tabs-container'>
-                    <button className='back-btn' onClick={()=>{handleBackToSetup()}}>&#8617; Zpět</button>
-                    <button className={`tool-btn ${activeOverlay === 'table' ? 'active' : ''}`} onClick={() => toggleOverlay('table')}>
+                <div className="tabs-container">
+                    <button
+                        className="back-btn"
+                        onClick={() => {
+                            handleBackToSetup();
+                        }}
+                    >
+                        &#8617; Zpět
+                    </button>
+                    <button
+                        className={`tool-btn ${activeOverlay === 'table' ? 'active' : ''}`}
+                        onClick={() => toggleOverlay('table')}
+                    >
                         📊 Tabulka
                     </button>
-                    <button className={`tool-btn ${activeOverlay === 'schema' ? 'active' : ''}`} onClick={() => toggleOverlay('schema')}>
+                    <button
+                        className={`tool-btn ${activeOverlay === 'schema' ? 'active' : ''}`}
+                        onClick={() => toggleOverlay('schema')}
+                    >
                         📜 Schéma
                     </button>
                     <button
@@ -279,10 +293,17 @@ export default function GamePage({ gameData }) {
                     )}
                 </div>
             </div>
-                    
+
             <div className="main-viewport" style={sceneStyle}>
                 <div className="info-bar">
-                    <span>{config.playerStatus}</span> | <span>Scéna: {currentScene}/{gameData.number_of_scenes}</span> | <span>Skóre: {score}</span>
+                    <span>
+                        Přezdívka: <strong>{playerName}</strong>
+                    </span>{' '}
+                    |{' '}
+                    <span>
+                        Scéna: {currentScene}/{gameData.number_of_scenes}
+                    </span>{' '}
+                    | <span>Skóre: {score}</span>
                 </div>
 
                 <div className="navigation">
@@ -313,7 +334,11 @@ export default function GamePage({ gameData }) {
                         highlight={(code) => highlight(code, languages.sql)}
                         padding={15}
                         className="sql-editor"
-                        onFocus={() => {if(query==="SEM PIŠ DOTAZY"){setQuery('')}}}
+                        onFocus={() => {
+                            if (query === 'SEM PIŠ DOTAZY') {
+                                setQuery('');
+                            }
+                        }}
                     />
                     <button className="execute-btn" onClick={runSql}>
                         PROVÉST DOTAZ
