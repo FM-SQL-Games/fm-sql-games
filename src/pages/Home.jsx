@@ -2,14 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 import { gameLibrary } from '../data/gameLibrary';
+import Navbar from '../components/Navbar';
 
 function Home() {
     return (
         <div className="home-container">
-            <header className="home-header">
-                <h1>FM TUL SQL GAMES</h1>
-                <p>Vyber si hru a začni se učit!</p>
-            </header>
+            <Navbar />
             <div className="game-grid">
                 {gameLibrary.map((game) => (
                     <div
