@@ -49,16 +49,19 @@ export default function GamePage({ gameData }) {
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
 
-    const saveToLocalStorage =useCallback((newLastSuccess, newAnsArray, newScore) => {
-        const rawData = localStorage.getItem('storage');
-        const storage = rawData ? JSON.parse(rawData) : {};
-        storage[config.id] = {
-            lastSuccess: newLastSuccess,
-            ansArray: newAnsArray,
-            score: newScore,
-        };
-        localStorage.setItem('storage', JSON.stringify(storage));
-    }, [config.id]);
+    const saveToLocalStorage = useCallback(
+        (newLastSuccess, newAnsArray, newScore) => {
+            const rawData = localStorage.getItem('storage');
+            const storage = rawData ? JSON.parse(rawData) : {};
+            storage[config.id] = {
+                lastSuccess: newLastSuccess,
+                ansArray: newAnsArray,
+                score: newScore,
+            };
+            localStorage.setItem('storage', JSON.stringify(storage));
+        },
+        [config.id]
+    );
 
     useEffect(() => {
         const rawData = localStorage.getItem('storage');
@@ -96,7 +99,15 @@ export default function GamePage({ gameData }) {
         if (!isFound) return;
         if (lastSuccessScene === 0) return;
         saveToLocalStorage(lastSuccessScene, succesfulAnwsersArray, score);
-    }, [lastSuccessScene, succesfulAnwsersArray, score, config.id, showLoadDialog, isFound, saveToLocalStorage]);
+    }, [
+        lastSuccessScene,
+        succesfulAnwsersArray,
+        score,
+        config.id,
+        showLoadDialog,
+        isFound,
+        saveToLocalStorage,
+    ]);
 
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
@@ -131,7 +142,7 @@ export default function GamePage({ gameData }) {
         const rawData = localStorage.getItem('storage');
         if (rawData) {
             const storage = JSON.parse(rawData);
-            delete storage[config.id]; 
+            delete storage[config.id];
             localStorage.setItem('storage', JSON.stringify(storage));
         }
     };
@@ -237,9 +248,18 @@ export default function GamePage({ gameData }) {
                     score={score}
                     gameName={config.dbName}
                     playerName={playerName}
-                    onRestart={()=>{clearGameStorage(); handleRestart()}}
-                    onBackToMenu={()=>{clearGameStorage(); handleBackToMenu()}}
-                    onSubmitScore={()=>{clearGameStorage(); saveScoreToLeaderboard()}}
+                    onRestart={() => {
+                        clearGameStorage();
+                        handleRestart();
+                    }}
+                    onBackToMenu={() => {
+                        clearGameStorage();
+                        handleBackToMenu();
+                    }}
+                    onSubmitScore={() => {
+                        clearGameStorage();
+                        saveScoreToLeaderboard();
+                    }}
                 />
             )}
 

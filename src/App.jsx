@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-
 import Home from './pages/Home';
 import GameSetup from './pages/game/GameSetup';
 import GamePage from './pages/game/GamePage';
+import LeaderboardPage from './pages/leaderboard/LeaderboardPage';
 import { getGameById } from './data/gameLibrary';
 
 function GameLoader(props) {
@@ -25,6 +26,7 @@ function App() {
         <Router basename={import.meta.env.BASE_URL}>
             <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/:gameId" element={<GameLoader component={GameSetup} />} />
                 <Route path="/:gameId/game" element={<GameLoader component={GamePage} />} />
             </Routes>

@@ -9,8 +9,8 @@ export default function LoadDialog({ foundData, onAccept, onDecline }) {
             <div className="load-dialog-box">
                 <h2>Byla nalezena rozehraná hra!</h2>
                 <p>
-                    Našli jsme tvůj předchozí postup (splněno: {foundData.lastSuccess}). Chceš
-                    v něm pokračovat?
+                    Našli jsme tvůj předchozí postup (splněno: {foundData.lastSuccess}). Chceš v něm
+                    pokračovat?
                 </p>
                 <div className="load-dialog-buttons">
                     <button className="btn-accept" onClick={onAccept}>
