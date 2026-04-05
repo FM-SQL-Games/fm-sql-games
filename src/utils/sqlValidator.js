@@ -1,40 +1,23 @@
 import _ from 'lodash';
-
-export const FORBIDDEN_WORDS = [
-    'drop',
-    'delete',
-    'insert',
-    'update',
-    'alter',
-    'truncate',
-    'grant',
-    'commit',
-    'rollback',
-    'pragma',
-    'attach',
-    'replace',
-    'upsert',
-    'vacuum',
-    'detach',
-    'begin',
-];
+import { Parser } from 'node-sql-parser';
 
 export const preprocessQuery = (query) => {
     const trimmed = query.trim();
-    if (FORBIDDEN_WORDS.some((word) => trimmed.toLowerCase().includes(word))) {
-        throw new Error('Ve tvém dotazu jsou nějaká nehezká slova!');
-    }
+    const parser = new Parser();
+    const obj = parser.astify(trimmed);
+    const statements = Array.isArray(obj) ? obj : [obj];
 
-    const statements = trimmed
-        .split(';')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-
-    if (statements.length > 1) {
+    if(statements.length > 1){
         throw new Error('Pouze jeden dotaz najednou!');
     }
 
-    return statements[0] || '';
+    const statement = statements[0]
+    console.log(statement.type)
+    if (statement.type !== 'select'){
+        throw new Error('V tvém příkazu jsou nějaká nehezká slova.')
+    }
+
+    return trimmed
 };
 
 export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes) => {
