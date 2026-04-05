@@ -10,9 +10,9 @@ export const logQueryToSupabase = async (queryData) => {
             error: queryData.error || null,
         },
     ]);
-    if (error){
+    if (error) {
         console.error('Chyba při logování:', error.message);
-    } 
+    }
 };
 
 export const saveLeaderboardScore = async (gameName, playerName, score) => {
@@ -23,7 +23,7 @@ export const saveLeaderboardScore = async (gameName, playerName, score) => {
             score: score,
         },
     ]);
-    if (error){
+    if (error) {
         console.error('Chyba při ukládání skóre:', error.message);
-    } 
+    }
 };
