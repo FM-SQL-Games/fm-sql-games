@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-sql';
@@ -49,6 +49,17 @@ export default function GamePage({ gameData }) {
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
 
+    const saveToLocalStorage =useCallback((newLastSuccess, newAnsArray, newScore) => {
+        const rawData = localStorage.getItem('storage');
+        const storage = rawData ? JSON.parse(rawData) : {};
+        storage[config.id] = {
+            lastSuccess: newLastSuccess,
+            ansArray: newAnsArray,
+            score: newScore,
+        };
+        localStorage.setItem('storage', JSON.stringify(storage));
+    }, [config.id]);
+
     useEffect(() => {
         const rawData = localStorage.getItem('storage');
         const storage = rawData ? JSON.parse(rawData) : {};
@@ -85,7 +96,7 @@ export default function GamePage({ gameData }) {
         if (!isFound) return;
         if (lastSuccessScene === 0) return;
         saveToLocalStorage(lastSuccessScene, succesfulAnwsersArray, score);
-    }, [lastSuccessScene, succesfulAnwsersArray, score, config.id, showLoadDialog, isFound]);
+    }, [lastSuccessScene, succesfulAnwsersArray, score, config.id, showLoadDialog, isFound, saveToLocalStorage]);
 
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
@@ -100,17 +111,6 @@ export default function GamePage({ gameData }) {
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
-
-    const saveToLocalStorage = (newLastSuccess, newAnsArray, newScore) => {
-        const rawData = localStorage.getItem('storage');
-        const storage = rawData ? JSON.parse(rawData) : {};
-        storage[config.id] = {
-            lastSuccess: newLastSuccess,
-            ansArray: newAnsArray,
-            score: newScore,
-        };
-        localStorage.setItem('storage', JSON.stringify(storage));
-    };
 
     const handleAcceptLoad = () => {
         console.log(foundData);
