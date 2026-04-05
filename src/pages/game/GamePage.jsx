@@ -11,6 +11,7 @@ import { useGameScore } from '../../hooks/useGameScore';
 import VictoryScreen from '../../components/VictoryScreen';
 
 import './GamePage.css';
+import LoadDialog from '../../components/LoadDialog';
 
 export default function GamePage({ gameData }) {
     const navigate = useNavigate();
@@ -18,7 +19,8 @@ export default function GamePage({ gameData }) {
 
     const playerName = location.state?.playerName || 'Host';
 
-    const { score, registerMistake, registerHint, submitScene, resetScore } = useGameScore();
+    const { score, registerMistake, registerHint, loadScore, submitScene, resetScore } =
+        useGameScore();
 
     const defaultConfig = {
         id: 'unknown',
@@ -43,6 +45,21 @@ export default function GamePage({ gameData }) {
     const [succesfulAnwsersArray, setSuccesfulAnwsersArray] = useState(
         Array(gameData.number_of_scenes).fill('')
     );
+    const [foundData, setFoundData] = useState(null);
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [isFound, setIsFound] = useState(false);
+
+    useEffect(() => {
+        const rawData = localStorage.getItem('storage');
+        const storage = rawData ? JSON.parse(rawData) : {};
+        const storage_gameData = storage[config.id];
+
+        if (storage_gameData) {
+            setFoundData(storage_gameData);
+            setShowLoadDialog(true);
+        }
+        setIsFound(true);
+    }, [config.id]);
 
     const toggleOverlay = (type) => {
         setActiveOverlay(type);
@@ -63,6 +80,13 @@ export default function GamePage({ gameData }) {
         );
     }, [gameData]);
 
+    useEffect(() => {
+        if (showLoadDialog) return;
+        if (!isFound) return;
+        if (lastSuccessScene === 0) return;
+        saveToLocalStorage(lastSuccessScene, succesfulAnwsersArray, score);
+    }, [lastSuccessScene, succesfulAnwsersArray, score, config.id, showLoadDialog, isFound]);
+
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
@@ -76,6 +100,41 @@ export default function GamePage({ gameData }) {
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
+
+    const saveToLocalStorage = (newLastSuccess, newAnsArray, newScore) => {
+        const rawData = localStorage.getItem('storage');
+        const storage = rawData ? JSON.parse(rawData) : {};
+        storage[config.id] = {
+            lastSuccess: newLastSuccess,
+            ansArray: newAnsArray,
+            score: newScore,
+        };
+        localStorage.setItem('storage', JSON.stringify(storage));
+    };
+
+    const handleAcceptLoad = () => {
+        console.log(foundData);
+        setLastSuccessScene(foundData.lastSuccess);
+        setSuccesfulAnwsersArray(foundData.ansArray);
+        loadScore(foundData.score);
+        setCurrentScene(foundData.lastSuccess + 1);
+        setShowLoadDialog(false);
+        setQuery('SEM PIŠ DOTAZY');
+    };
+
+    const handleDeclineLoad = () => {
+        clearGameStorage();
+        setShowLoadDialog(false);
+    };
+
+    const clearGameStorage = () => {
+        const rawData = localStorage.getItem('storage');
+        if (rawData) {
+            const storage = JSON.parse(rawData);
+            delete storage[config.id]; 
+            localStorage.setItem('storage', JSON.stringify(storage));
+        }
+    };
 
     const handleRestart = () => {
         setIsGameFinished(false);
@@ -165,14 +224,22 @@ export default function GamePage({ gameData }) {
 
     return (
         <div className={`game-page ${config.theme}`}>
+            {showLoadDialog && (
+                <LoadDialog
+                    foundData={foundData}
+                    onAccept={handleAcceptLoad}
+                    onDecline={handleDeclineLoad}
+                />
+            )}
+
             {isGameFinished && (
                 <VictoryScreen
                     score={score}
                     gameName={config.dbName}
                     playerName={playerName}
-                    onRestart={handleRestart}
-                    onBackToMenu={handleBackToMenu}
-                    onSubmitScore={saveScoreToLeaderboard}
+                    onRestart={()=>{clearGameStorage(); handleRestart()}}
+                    onBackToMenu={()=>{clearGameStorage(); handleBackToMenu()}}
+                    onSubmitScore={()=>{clearGameStorage(); saveScoreToLeaderboard()}}
                 />
             )}
 

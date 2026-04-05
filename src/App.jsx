@@ -4,7 +4,7 @@ import GameSetup from './pages/game/GameSetup';
 import GamePage from './pages/game/GamePage';
 import { getGameById } from './data/gameLibrary';
 
-function GameLoader(props) { 
+function GameLoader(props) {
     const { component: Component } = props;
     const { gameId } = useParams();
     const gameData = getGameById(gameId);

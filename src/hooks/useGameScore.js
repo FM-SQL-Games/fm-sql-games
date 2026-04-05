@@ -17,6 +17,10 @@ export const useGameScore = () => {
         setUsedHint(true);
     };
 
+    const loadScore = (newScore) => {
+        setTotalScore(newScore);
+    };
+
     const submitScene = () => {
         let earnedPoints = BASE_SCORE;
 
@@ -49,6 +53,7 @@ export const useGameScore = () => {
         usedHint,
         registerMistake,
         registerHint,
+        loadScore,
         submitScene,
         resetScore,
     };

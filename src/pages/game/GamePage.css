@@ -193,16 +193,15 @@ body,
 
 .tabs-container {
     display: flex;
-    align-items: flex-end; 
-    border-bottom: 2px solid #555; 
+    align-items: flex-end;
+    border-bottom: 2px solid #555;
     padding: 10px 10px 0 10px;
     gap: 4px;
-    background-color: #a0a0a0; 
+    background-color: #a0a0a0;
 }
 
-
 .back-btn {
-    margin-right: auto; 
+    margin-right: auto;
     margin-bottom: 6px;
     padding: 6px 12px;
     background-color: #555;
@@ -223,13 +222,13 @@ body,
     padding: 10px 50px;
     background-color: #b0b0b0;
     border: 2px solid #555;
-    border-bottom: none; 
-    border-radius: 10px 10px 0 0; 
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
     cursor: pointer;
     font-weight: bold;
     color: #333;
     font-family: inherit;
-    transform: translateY(2px); 
+    transform: translateY(2px);
 }
 
 .tool-btn:hover {
@@ -237,14 +236,14 @@ body,
 }
 
 .tool-btn.active {
-    background-color: #c6c6c6; 
-    border-bottom: 2px solid #c6c6c6; 
+    background-color: #c6c6c6;
+    border-bottom: 2px solid #c6c6c6;
     color: #000;
-    z-index: 10; 
+    z-index: 10;
 }
 
 .overlay-content {
-    background-color: #c6c6c6; 
+    background-color: #c6c6c6;
     height: 100%;
 }
 

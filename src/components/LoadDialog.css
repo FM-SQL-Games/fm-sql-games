@@ -1,0 +1,86 @@
+.load-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.load-dialog-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    color: #333333;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    animation: dialogFadeIn 0.3s ease-out;
+}
+
+.load-dialog-box h2 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.load-dialog-box p {
+    margin: 15px 0 25px;
+    line-height: 1.5;
+    font-size: 1.1rem;
+}
+
+.load-dialog-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-accept,
+.btn-decline {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+.btn-accept {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-accept:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.btn-decline {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-decline:hover {
+    background-color: #da190b;
+    transform: scale(1.05);
+}
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
