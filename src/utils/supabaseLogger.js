@@ -27,3 +27,25 @@ export const saveLeaderboardScore = async (gameName, playerName, score) => {
         console.error('Chyba při ukládání skóre:', error.message);
     }
 };
+
+export const fetchLeaderboardData = async (gameName) => {
+    try {
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select('id, player_name, score, created_at')
+            .eq('game_name', gameName)
+            .order('score', { ascending: false })
+            .order('created_at', { ascending: true })
+            .limit(100);
+
+        if (error) {
+            console.error('Chyba při stahování leaderboardu:', error.message);
+            return [];
+        }
+
+        return data || [];
+    } catch (err) {
+        console.error('Chyba při komunikaci se Supabase:', err);
+        return [];
+    }
+};
