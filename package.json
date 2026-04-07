@@ -13,6 +13,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "lodash": "^4.17.23",
+    "node-sql-parser": "^5.4.0",
     "prismjs": "^1.30.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
