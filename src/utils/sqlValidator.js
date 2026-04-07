@@ -2,29 +2,31 @@ import _ from 'lodash';
 import { Parser } from 'node-sql-parser';
 
 export const preprocessQuery = (query) => {
-    try{
+    try {
         const trimmed = query.trim();
         const parser = new Parser();
         const obj = parser.astify(trimmed);
         const statements = Array.isArray(obj) ? obj : [obj];
 
-        if(statements.length > 1){
+        if (statements.length > 1) {
             throw new Error('Pouze jeden dotaz najednou!');
         }
 
-        const statement = statements[0]
-        console.log(statement.type)
-        if (statement.type !== 'select'){
-            throw new Error('V tvém příkazu jsou nějaká nehezká slova.')
+        const statement = statements[0];
+        console.log(statement.type);
+        if (statement.type !== 'select') {
+            throw new Error('V tvém příkazu jsou nějaká nehezká slova.');
         }
 
-        return trimmed
-    }
-    catch(error){
-        if(error.message === 'Pouze jeden dotaz najednou!' || error.message === 'V tvém příkazu jsou nějaká nehezká slova.'){
+        return trimmed;
+    } catch (error) {
+        if (
+            error.message === 'Pouze jeden dotaz najednou!' ||
+            error.message === 'V tvém příkazu jsou nějaká nehezká slova.'
+        ) {
             throw error;
         }
-        throw new Error('Chyba v syntaxi.')
+        throw new Error('Chyba v syntaxi.');
     }
 };
 
