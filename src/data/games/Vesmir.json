@@ -1,7 +1,6 @@
 {
     "config": {
         "title": "SQL Vesmír",
-        "schemaImg": "TULEscape_scheme.png",
         "id": "sql-vesmir",
         "dbName": "SQLVesmír",
         "assetFolder": "SQLVesmír",
