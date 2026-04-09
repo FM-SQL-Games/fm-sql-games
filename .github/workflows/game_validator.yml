@@ -1,0 +1,55 @@
+name: Validace a Preprocessing nově přidaných SQL her
+on:
+  pull_request:
+    paths:
+      - 'src/data/games/**'
+      - 'public/assets/**'
+      - 'public/pageAssets/**'
+    branches-ignore:
+      - main
+
+jobs:
+  validate-and-commit:
+    if: startsWith(github.head_ref, 'feature/add-game-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout kódu
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Kontrola nepovolených změn
+        run: |
+          echo "Kontroluji soubory v PR proti větvi ${{ github.base_ref }}..."
+          # Získáme seznam změněných souborů
+          git fetch origin ${{ github.base_ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          for file in $CHANGED_FILES; do
+            # Povolené cesty: JSONy her, globální assety (schémata) a assety scén
+            if [[ ! $file =~ ^src/data/games/.*\.json$ ]] && \
+               [[ ! $file =~ ^public/assets/.* ]] && \
+               [[ ! $file =~ ^public/pageAssets/.* ]]; then
+              echo "::error::Nepovolená změna! Přispěvatelé her smí měnit pouze JSONy her a obrázky. Soubor '$file' není povolen."
+              exit 1
+            fi
+          done
+          echo " Všechny změněné soubory jsou v povolených složkách."
+
+      - name: Nastavení Pythonu
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Spuštění validátoru (Python)
+        run: python scripts/validate_game.py
+
+      - name: Commit a Push změn (Preprocessing)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: automatický preprocessing nové hry [skip ci]"
+          file_pattern: 'src/data/games/*.json'

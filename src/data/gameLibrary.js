@@ -1,7 +1,6 @@
-import sqlCraftData from './SQLCraft.json';
-import tulEscapeData from './TULEscape.json';
+const gameModules = import.meta.glob('./games/*.json', { eager: true });
 
-export const gameLibrary = [sqlCraftData, tulEscapeData];
+export const gameLibrary = Object.values(gameModules).map((module) => module.default);
 
 export const getGameById = (id) => {
     return gameLibrary.find((game) => game.config.id === id);
