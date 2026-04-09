@@ -29,7 +29,7 @@ export default function GamePage({ gameData }) {
         loadingText: 'Načítám...',
         assetFolder: 'default',
         schemaImg: 'default.png',
-    }; // tohle bych už měl odstranit
+    }; 
 
     const config = { ...defaultConfig, ...gameData.config };
 
