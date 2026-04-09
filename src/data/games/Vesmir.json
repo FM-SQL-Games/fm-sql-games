@@ -1,6 +1,7 @@
 {
     "config": {
         "title": "SQL Vesmír",
+        "schemaImg": "TULEscape_scheme.png",
         "id": "sql-vesmir",
         "dbName": "SQLVesmír",
         "assetFolder": "SQLVesmír",
@@ -14,7 +15,7 @@
         {
             "story": "Motory lodi jsou v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
             "prompt": "Vypiš všechny sloupce z tabulky Engines.",
-            "answer": "SELECT * FROM Engines;",
+            "answer": "SELEECT * FROM Engines;",
             "id": 1,
             "keywords": [
                 "SELECT",
