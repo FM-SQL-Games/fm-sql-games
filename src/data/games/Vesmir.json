@@ -15,7 +15,7 @@
         {
             "story": "Motory lodi jsou v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
             "prompt": "Vypiš všechny sloupce z tabulky Engines.",
-            "answer": "SELEECT * FROM Engines;",
+            "answer": "SELECT * FROM Modules;",
             "id": 1,
             "keywords": [
                 "SELECT",
