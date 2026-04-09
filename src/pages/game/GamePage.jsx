@@ -29,7 +29,7 @@ export default function GamePage({ gameData }) {
         loadingText: 'Načítám...',
         assetFolder: 'default',
         schemaImg: 'default.png',
-    }; 
+    };
 
     const config = { ...defaultConfig, ...gameData.config };
 
@@ -428,7 +428,7 @@ export default function GamePage({ gameData }) {
                         }}
                     />
                     <button className="execute-btn" onClick={runSql}>
-                        PROVÉST DOTAZ 
+                        PROVÉST DOTAZ
                     </button>
                 </div>
             </div>
