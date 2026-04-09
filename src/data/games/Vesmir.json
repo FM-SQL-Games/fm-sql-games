@@ -1,7 +1,13 @@
 {
     "config": {
         "title": "SQL Vesmír",
-        "schemaImg": "TULEscape_scheme.png"
+        "schemaImg": "TULEscape_scheme.png",
+        "id": "sql-vesmir",
+        "dbName": "SQLVesmír",
+        "assetFolder": "SQLVesmír",
+        "active": true,
+        "btnText": "Hrát",
+        "loadingText": "Načítám..."
     },
     "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER);",
     "insertScript": "INSERT INTO Engines (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
@@ -9,7 +15,14 @@
         {
             "story": "Motory lodi jsou v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
             "prompt": "Vypiš všechny sloupce z tabulky Engines.",
-            "answer": "SELECT * FROM Engines;"
+            "answer": "SELECT * FROM Engines;",
+            "id": 1,
+            "keywords": [
+                "SELECT",
+                "FROM"
+            ],
+            "img": "1.jpg"
         }
-    ]
+    ],
+    "number_of_scenes": 1
 }
