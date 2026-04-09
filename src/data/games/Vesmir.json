@@ -1,0 +1,15 @@
+{
+    "config": {
+        "title": "SQL Vesmír",
+        "schemaImg": "TULEscape_scheme.png"
+    },
+    "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER);",
+    "insertScript": "INSERT INTO Engines (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
+    "scenes": [
+        {
+            "story": "Motory lodi jsou v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
+            "prompt": "Vypiš všechny sloupce z tabulky Engines.",
+            "answer": "SELECT * FROM Engines;"
+        }
+    ]
+}
