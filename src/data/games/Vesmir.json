@@ -9,8 +9,8 @@
         "btnText": "Hrát",
         "loadingText": "Načítám..."
     },
-    "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER);",
-    "insertScript": "INSERT INTO Modules (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
+    "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER, počet členů, kteří opravují motor);",
+    "insertScript": "INSERT INTO Engines (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
     "scenes": [
         {
             "story": "Motory lodi jsou v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
