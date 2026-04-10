@@ -6,15 +6,7 @@ export default function GameSetup({ gameData }) {
     const navigate = useNavigate();
     const [playerName, setPlayerName] = useState(localStorage.getItem('sqlPlayerName') || '');
 
-    const defaultConfig = {
-        id: 'unknown',
-        theme: 'default-theme',
-        setupTitle: 'Nová SQL Výzva',
-        setupDescription: 'Popis této hry zatím chybí.',
-        btnText: 'Hrát',
-    };
-
-    const config = { ...defaultConfig, ...gameData.config };
+    const config = gameData.config;
 
     const handleStart = () => {
         if (playerName.trim().length < 3) {

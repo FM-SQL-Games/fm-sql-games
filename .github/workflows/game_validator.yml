@@ -5,7 +5,7 @@ on:
       - 'src/data/games/**'
       - 'public/assets/**'
       - 'public/pageAssets/**'
-    branches-ignore:
+    branches:
       - main
 
 jobs:
