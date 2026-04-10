@@ -72,7 +72,8 @@
             "story": "Získat heslo garanta je momentálně nemožné. Všiml sis ale, že na některých serverech dochází místo. Pokud bys našel předmět, který zabírá nejvíce dat, mohl bys simulovat pád disku a vnutit systému svůj správný soubor jako nouzovou zálohu.",
             "prompt": "Zjisti celkovou velikost dat pro každý kód předmětu. Výsledky seřaď od největšího po nejmenší.",
             "answer": "SELECT subject_code, SUM(file_size_mb) AS total_size FROM Submission GROUP BY subject_code ORDER BY total_size DESC;",
-            "keywords": ["SUM", "AS", "GROUP BY", "ORDER BY", "DESC"]
+            "keywords": ["SUM", "AS", "GROUP BY", "ORDER BY", "DESC"],
+            "strict_rules": ["strict_row_order"]
         },
         {
             "id": 8,
@@ -152,7 +153,8 @@
             "story": "Hackovací skript máš už připravený. K obejití posledního bezpečnostního protokolu ale STAG vyžaduje kontrolní časové razítko, musíš do skriptu vložit přesný čas historicky prvního zaznamenaného přístupu do sítě TUL.",
             "prompt": "Najdi úplně první (nejstarší) čas pokusu o přihlášení ze všech záznamů v tabulce Access_Log a pojmenuj ho First_Login.",
             "answer": "SELECT MIN(attempt_time) AS First_Login FROM Access_Log;",
-            "keywords": ["MIN", "AS"]
+            "keywords": ["MIN", "AS"],
+            "strict_rules":["strict_as"]
         },
         {
             "id": 18,

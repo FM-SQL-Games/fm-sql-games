@@ -58,13 +58,11 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
         return false;
     }
 
-    const sortVals = (tab) => tab.values.map(row => {
+    const toObjects = (tab) => tab.values.map(row => {
         let obj = {};
         tab.columns.forEach((col, i) => { obj[col] = row[i]; });
         return obj;
     });
-
-    const hasSameElements = (arr1, arr2) => _.differenceWith(arr1, arr2, _.isEqual).length === 0;
 
     const strictAs = strictRules.includes("strict_as")
     const strictColOrder = strictRules.includes("strict_column_order")
@@ -77,8 +75,8 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
         if(!_.isEqual([...uTab.columns].sort(), [...rTab.columns].sort())){
             return false;
         }
-        uData = sortVals(uTab);
-        rData = sortVals(rTab);
+        uData = toObjects(uTab);
+        rData = toObjects(rTab);
     }
     else if(strictAs && strictColOrder){
         if(!_.isEqual(uTab.columns, rTab.columns)){
@@ -96,6 +94,7 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
         return _.isEqual(uData, rData);
     }
     else{
-        return hasSameElements(uData, rData);
+        const sortData = (data) => [...data].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+        return _.isEqual(sortData(uData), sortData(rData));
     }
 };
