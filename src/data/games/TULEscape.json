@@ -106,6 +106,9 @@
                 "GROUP BY",
                 "ORDER BY",
                 "DESC"
+            ],
+            "strict_rules":[
+                "strict_row_order"
             ]
         },
         {
@@ -222,12 +225,16 @@
             "id": 17,
             "img": "17.jpg",
             "story": "Hackovací skript máš už připravený. K obejití posledního bezpečnostního protokolu ale STAG vyžaduje kontrolní časové razítko, musíš do skriptu vložit přesný čas historicky prvního zaznamenaného přístupu do sítě TUL.",
-            "prompt": "Najdi úplně první (nejstarší) čas pokusu o přihlášení ze všech záznamů v tabulce Access_Log.",
+            "prompt": "Najdi úplně první (nejstarší) čas pokusu o přihlášení ze všech záznamů v tabulce Access_Log a pojmenuj ho First_Login.",
             "answer": "SELECT MIN(attempt_time) AS First_Login FROM Access_Log;",
             "keywords": [
                 "MIN",
                 "AS"
+            ],
+            "strict_rules":[
+                "strict_as"
             ]
+            
         },
         {
             "id": 18,

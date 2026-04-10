@@ -13,7 +13,6 @@ export const preprocessQuery = (query) => {
         }
 
         const statement = statements[0];
-        console.log(statement.type);
         if (statement.type !== 'select') {
             throw new Error('V tvém příkazu jsou nějaká nehezká slova.');
         }
@@ -30,7 +29,7 @@ export const preprocessQuery = (query) => {
     }
 };
 
-export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes) => {
+export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, strictRules = []) => {
     let trimmedUser = userQuery.toLowerCase().trim();
     let trimmedAnswer = referenceQuery.toLowerCase().trim();
 
@@ -58,5 +57,45 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes) =
     if (uTab.values.length !== rTab.values.length) {
         return false;
     }
-    return _.isEqual(uTab.values, rTab.values);
+
+    const sortVals = (tab) => tab.values.map(row => {
+        let obj = {};
+        tab.columns.forEach((col, i) => { obj[col] = row[i]; });
+        return obj;
+    });
+
+    const hasSameElements = (arr1, arr2) => _.differenceWith(arr1, arr2, _.isEqual).length === 0;
+
+    const strictAs = strictRules.includes("strict_as")
+    const strictColOrder = strictRules.includes("strict_column_order")
+    const strictRowOrder = strictRules.includes("strict_row_order")
+
+    let uData;
+    let rData;
+
+    if(strictAs && !strictColOrder){
+        if(!_.isEqual([...uTab.columns].sort(), [...rTab.columns].sort())){
+            return false;
+        }
+        uData = sortVals(uTab);
+        rData = sortVals(rTab);
+    }
+    else if(strictAs && strictColOrder){
+        if(!_.isEqual(uTab.columns, rTab.columns)){
+            return false;
+        }
+        uData = uTab.values;
+        rData = rTab.values;
+    }
+    else{
+        uData = uTab.values;
+        rData = rTab.values;
+    }
+
+    if(strictRowOrder){
+        return _.isEqual(uData, rData);
+    }
+    else{
+        return hasSameElements(uData, rData);
+    }
 };

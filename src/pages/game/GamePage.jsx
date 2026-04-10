@@ -182,7 +182,7 @@ export default function GamePage({ gameData }) {
 
             const referenceRes = db.exec(currSceneData.answer);
 
-            isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
+            isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules);
 
             if (isCorrect) {
                 const newArray = [...succesfulAnwsersArray];
