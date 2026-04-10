@@ -11,20 +11,25 @@ SQL_KEYWORDS = [
     "IN", "AND", "OR", "NOT", "EXISTS", "LIKE", "IS NULL", "IFNULL"
 ]
 
+
+def remove_diacritics(text):
+    """Odstraní českou diakritiku z textu."""
+    accent_map = {
+        'á': 'a', 'č': 'c', 'ď': 'd', 'é': 'e', 'ě': 'e', 'í': 'i', 'ň': 'n',
+        'ó': 'o', 'ř': 'r', 'š': 's', 'ť': 't', 'ú': 'u', 'ů': 'u', 'ý': 'y', 'ž': 'z',
+        'Á': 'A', 'Č': 'C', 'Ď': 'D', 'É': 'E', 'Ě': 'E', 'Í': 'I', 'Ň': 'N',
+        'Ó': 'O', 'Ř': 'R', 'Š': 'S', 'Ť': 'T', 'Ú': 'U', 'Ů': 'U', 'Ý': 'Y', 'Ž': 'Z'
+    }
+    for char, replacement in accent_map.items():
+        text = text.replace(char, replacement)
+    return text
+
 def slugify(text):
     """
     Převede název na ID (např. 'SQL Vesmír' -> 'sql-vesmir').
     Podporuje odstranění české diakritiky.
     """
-    accent_map = {
-        'á': 'a', 'č': 'c', 'ď': 'd', 'é': 'e', 'ě': 'e', 'í': 'i', 'ň': 'n',
-        'ó': 'o', 'ř': 'r', 'š': 's', 'ť': 't', 'ú': 'u', 'ů': 'u', 'ý': 'y', 'ž': 'z'
-    }
-    
-    text = text.lower()
-    for char, replacement in accent_map.items():
-        text = text.replace(char, replacement)
-    
+    text = remove_diacritics(text).lower()
     text = re.sub(r'[^a-z0-9]+', '-', text)
     return text.strip('-')
 
@@ -67,11 +72,15 @@ def validate_and_preprocess(file_path):
         sys.exit(1)
 
     # Doplnění metadat
+    clean_title = remove_diacritics(title).replace(" ", "") 
     game_id = config.get('id') or slugify(title)
-    config['id'] = game_id  
-    config['dbName'] = config.get('dbName') or title.replace(" ", "")
-    config['assetFolder'] = config.get('assetFolder') or config['dbName']
+    config['id'] = game_id
+    config['dbName'] = config.get('dbName') or clean_title
+    config['assetFolder'] = config.get('assetFolder') or clean_title
     config['active'] = config.get('active', True)
+    config['theme'] = config.get('theme', 'default-theme')
+    config['setupTitle'] = config.get('setupTitle', 'Nová SQL Výzva')
+    config['setupDescription'] = config.get('setupDescription', 'Popis této hry zatím chybí.')
     config['btnText'] = config.get('btnText', 'Hrát')
     config['loadingText'] = config.get('loadingText', "Načítám...")
 
