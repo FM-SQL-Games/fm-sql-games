@@ -22,16 +22,7 @@ export default function GamePage({ gameData }) {
     const { score, registerMistake, registerHint, loadScore, submitScene, resetScore } =
         useGameScore();
 
-    const defaultConfig = {
-        id: 'unknown',
-        theme: 'default-theme',
-        dbName: 'GenericSQL',
-        loadingText: 'Načítám...',
-        assetFolder: 'default',
-        schemaImg: 'default.png',
-    };
-
-    const config = { ...defaultConfig, ...gameData.config };
+    const config = gameData.config;
 
     const [activeOverlay, setActiveOverlay] = useState('schema');
     const [db, setDb] = useState(null);
