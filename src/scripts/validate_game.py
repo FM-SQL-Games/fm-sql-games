@@ -11,7 +11,6 @@ SQL_KEYWORDS = [
     "IN", "AND", "OR", "NOT", "EXISTS", "LIKE", "IS NULL", "IFNULL"
 ]
 
-
 def remove_diacritics(text):
     """Odstraní českou diakritiku z textu."""
     accent_map = {
@@ -27,7 +26,6 @@ def remove_diacritics(text):
 def slugify(text):
     """
     Převede název na ID (např. 'SQL Vesmír' -> 'sql-vesmir').
-    Podporuje odstranění české diakritiky.
     """
     text = remove_diacritics(text).lower()
     text = re.sub(r'[^a-z0-9]+', '-', text)
@@ -44,6 +42,33 @@ def extract_keywords(sql):
             found.append(word)
     return found
 
+
+def enrich_config(config):
+    """
+    Doplní chybějící pole v configu na základě title.
+    """
+    errors = []
+    title = config.get('title')
+    if not title:
+        errors.append("V configu chybí 'title'.")
+        return config, errors
+
+    clean_title = remove_diacritics(title).replace(" ", "") 
+    config['id'] = config.get('id') or slugify(title)
+    config['dbName'] = config.get('dbName') or clean_title
+    config['assetFolder'] = config.get('assetFolder') or clean_title
+    config['active'] = config.get('active', True)
+    config['theme'] = config.get('theme', 'default-theme')
+    config['setupTitle'] = config.get('setupTitle', 'Nová SQL Výzva')
+    config['setupDescription'] = config.get('setupDescription', 'Popis této hry zatím chybí.')
+    config['btnText'] = config.get('btnText', 'Hrát')
+    config['loadingText'] = config.get('loadingText', "Načítám...")
+
+    if not config.get('schemaImg'):
+        errors.append("V configu chybí povinné pole 'schemaImg'.")
+    
+    return config, errors
+
 def validate_and_preprocess(file_path):
     """
     Validuje a doplňuje metadata v JSON souboru s hrou.
@@ -55,62 +80,49 @@ def validate_and_preprocess(file_path):
             data = json.load(f)
     except Exception as e:
         print(f"::error file={file_path}::Soubor není validní JSON! ({e})")
-        sys.exit(1)
+        return False
+
+    errors = []
     
     # Kontrola povinných polí na úrovni rootu
     required_root_fields = ['createScript', 'insertScript', 'scenes']
     for field in required_root_fields:
         if field not in data:
-            print(f"::error file={file_path}::V souboru chybí povinné pole '{field}'.")
-            sys.exit(1)
+            errors.append(f"V souboru chybí povinné pole '{field}'.")
 
-    config = data.get('config', {})
-    title = config.get('title')
+    # Doplnění metadat v configu
+    config, config_errors = enrich_config(data.get('config', {}))
+    errors.extend(config_errors)
+    data['config'] = config
 
-    if not title:
-        print(f"::error file={file_path}::V configu chybí 'title'.")
-        sys.exit(1)
-
-    # Doplnění metadat
-    clean_title = remove_diacritics(title).replace(" ", "") 
-    game_id = config.get('id') or slugify(title)
-    config['id'] = game_id
-    config['dbName'] = config.get('dbName') or clean_title
-    config['assetFolder'] = config.get('assetFolder') or clean_title
-    config['active'] = config.get('active', True)
-    config['theme'] = config.get('theme', 'default-theme')
-    config['setupTitle'] = config.get('setupTitle', 'Nová SQL Výzva')
-    config['setupDescription'] = config.get('setupDescription', 'Popis této hry zatím chybí.')
-    config['btnText'] = config.get('btnText', 'Hrát')
-    config['loadingText'] = config.get('loadingText', "Načítám...")
-
-    # Testování SQL
+    if errors:
+        for err in errors:
+            print(f"::error file={file_path}::{err}")
+        return False
+    
+    # Testování SQL a zpracování scén
     try:
         connection = sqlite3.connect(':memory:')
         cursor = connection.cursor()
-
         cursor.executescript(data['createScript'])
         cursor.executescript(data['insertScript'])
 
-        print("Inicializační SQL skripty jsou v pořádku.")
-
-        # Zpracování scén
         scenes_list = data.get('scenes', [])
         data['number_of_scenes'] = len(scenes_list)
+        asset_folder = config.get('assetFolder')
 
         for index, scene in enumerate(scenes_list):
             scene_id = index + 1
             scene['id'] = scene_id
 
             if 'answer' not in scene:
-                print(f"::error file={file_path}::CHYBA ve scéně {scene_id}: Chybí pole 'answer'.")
-                sys.exit(1)
+                errors.append(f"Scéna {scene_id}: Chybí pole 'answer'.")
+                continue
 
             try:
                 cursor.execute(scene['answer'])
             except Exception as e:
-                print(f"::error file={file_path}::CHYBA ve scéně {scene_id}: Neplatný SQL 'answer'! ({e})")
-                sys.exit(1)
+                errors.append(f"Scéna {scene_id}: Neplatný SQL v poli 'answer'! ({e})")
 
             if not scene.get('keywords'):
                 scene['keywords'] = extract_keywords(scene['answer'])
@@ -118,29 +130,22 @@ def validate_and_preprocess(file_path):
             if not scene.get('img'):
                 scene['img'] = f"{scene_id}.jpg"
 
-            asset_folder = config.get('assetFolder')
             if asset_folder:
                 img_path = os.path.join('public', 'pageAssets', asset_folder, 'scenes', scene['img'])
                 if not os.path.exists(img_path):
                     print(f"::warning file={file_path}::Obrázek scény '{img_path}' nebyl nalezen.")
 
-        print(f"Všech {len(scenes_list)} scén bylo úspěšně zvalidováno.")
         connection.close()
 
     except Exception as e:
-        print(f"::error file={file_path}::Kritická chyba při práci s databází: {e}")
-        sys.exit(1)
+        errors.append(f"Kritická chyba při práci s databází: {e}")
 
     # Kontrola existence schématu
     schema_name = config.get('schemaImg')
     if schema_name:
         schema_path = os.path.join('public', 'assets', schema_name)
         if not os.path.exists(schema_path):
-            print(f"::error file={file_path}::Soubor schématu '{schema_name}' nebyl nalezen v public/assets/!")
-            sys.exit(1)
-    else:
-        print(f"::error file={file_path}::V configu chybí povinné pole 'schemaImg'.")
-        sys.exit(1)
+            errors.append(f"Soubor schématu '{schema_name}' nebyl nalezen v public/assets/!")
 
     # Kontrola existence náhledového obrázku karty
     card_img = config.get('cardImage')
@@ -149,19 +154,30 @@ def validate_and_preprocess(file_path):
         if not os.path.exists(card_path):
             print(f"::warning file={file_path}::Náhledový obrázek karty '{card_img}' nebyl nalezen.")
 
-    data['config'] = config
+    if errors:
+        for err in errors:
+            print(f"::error file={file_path}::{err}")
+        return False
+
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
     print(f"--- {file_path} byl úspěšně zpracován ---\n")
+    return True
 
 
 if __name__ == "__main__":
     folder = 'src/data/games'
+    overall_success = True
+
     if not os.path.exists(folder):
         print(f"::error::Složka {folder} neexistuje!")
         sys.exit(1)
         
     for filename in os.listdir(folder):
         if filename.endswith('.json'):
-            validate_and_preprocess(os.path.join(folder, filename))
+            if not validate_and_preprocess(os.path.join(folder, filename)):
+                overall_success = False
+    
+    if not overall_success:
+        sys.exit(1)
