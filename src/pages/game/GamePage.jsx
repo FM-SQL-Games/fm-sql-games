@@ -5,7 +5,11 @@ import 'prismjs/components/prism-sql';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { preprocessQuery, isSuccessful } from '../../utils/sqlValidator';
 import { initDatabase, executeSafeQuery } from '../../utils/dbHandler';
-import { logQueryToSupabase, saveLeaderboardScore } from '../../utils/supabaseLogger';
+import {
+    logQueryToSupabase,
+    saveLeaderboardScore,
+    logErrorToSupabase,
+} from '../../utils/supabaseLogger';
 import { sqlDictionary } from '../../data/sqlDictionary';
 import { useGameScore } from '../../hooks/useGameScore';
 import VictoryScreen from '../../components/VictoryScreen';
@@ -17,6 +21,7 @@ export default function GamePage({ gameData }) {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
 
     const { score, registerMistake, registerHint, loadScore, submitScene, resetScore } =
@@ -26,6 +31,7 @@ export default function GamePage({ gameData }) {
 
     const [activeOverlay, setActiveOverlay] = useState('schema');
     const [db, setDb] = useState(null);
+    const [dbInitError, setDbInitError] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
     const [lastSuccessScene, setLastSuccessScene] = useState(0);
     const currSceneData = gameData.scenes[currentScene - 1];
@@ -80,10 +86,21 @@ export default function GamePage({ gameData }) {
     }, [query]);
 
     useEffect(() => {
-        initDatabase(gameData.createScript, gameData.insertScript).then((database) =>
-            setDb(database)
+        initDatabase(gameData.createScript, gameData.insertScript).then(
+            ({ db: database, error: initError }) => {
+                if (initError) {
+                    setDbInitError(initError);
+                    logErrorToSupabase({
+                        sessionId,
+                        gameName: config.dbName,
+                        type: 'DB_INIT_FAIL',
+                        message: initError,
+                    });
+                }
+                setDb(database);
+            }
         );
-    }, [gameData]);
+    }, [gameData, config.dbName, sessionId]);
 
     useEffect(() => {
         if (showLoadDialog) return;
@@ -115,7 +132,6 @@ export default function GamePage({ gameData }) {
     }
 
     const handleAcceptLoad = () => {
-        console.log(foundData);
         setLastSuccessScene(foundData.lastSuccess);
         setSuccesfulAnwsersArray(foundData.ansArray);
         loadScore(foundData.score);
@@ -163,6 +179,7 @@ export default function GamePage({ gameData }) {
 
         let currentError = null;
         let isCorrect = false;
+        let forcePass = false;
         try {
             const cleanQuery = preprocessQuery(query);
 
@@ -171,9 +188,26 @@ export default function GamePage({ gameData }) {
                 throw new Error(dbError);
             }
 
-            const referenceRes = db.exec(currSceneData.answer);
+            let referenceRes;
+            try {
+                referenceRes = db.exec(currSceneData.answer);
+            } catch (refError) {
+                forcePass = true;
+                logErrorToSupabase({
+                    sessionId,
+                    gameName: config.dbName,
+                    type: 'REF_QUERY_FAIL',
+                    message: `Scéna ${currentScene}: ${refError.message}`,
+                    stack: refError.stack,
+                });
+            }
 
-            isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
+            if (forcePass) {
+                isCorrect = true;
+                console.warn('Uživatel prošel přes Force Pass (chyba v zadání).');
+            } else {
+                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
+            }
 
             if (isCorrect) {
                 const newArray = [...succesfulAnwsersArray];
@@ -182,6 +216,9 @@ export default function GamePage({ gameData }) {
                 if (currentScene - 1 == lastSuccessScene) {
                     setLastSuccessScene((prev) => prev + 1);
                     submitScene();
+                }
+                if (forcePass) {
+                    setError('Z důvodu technické chyby v zadání tě pouštíme dál!');
                 }
             } else {
                 registerMistake();
@@ -208,11 +245,12 @@ export default function GamePage({ gameData }) {
             query: query,
             isCorrect: isCorrect,
             error: currentError,
+            sessionId,
         });
     };
 
-    const saveScoreToLeaderboard = (playerName) => {
-        saveLeaderboardScore(config.dbName, playerName, score);
+    const saveScoreToLeaderboard = () => {
+        saveLeaderboardScore(config.dbName, playerName, score, sessionId);
     };
 
     const sceneStyle = {
@@ -221,6 +259,29 @@ export default function GamePage({ gameData }) {
             : 'none',
         backgroundColor: '#f2f2c0',
     };
+
+    if (dbInitError) {
+        return (
+            <div className={`error-screen ${config.theme}`}>
+                <h1>Systémová chyba</h1>
+                <p>
+                    <strong>Detail:</strong> {dbInitError}
+                    <br />
+                    <br />
+                    Nepodařilo se správně připravit herní prostředí. Zkontroluj připojení k
+                    internetu nebo zkus stránku obnovit.
+                </p>
+                <div className="error-actions">
+                    <button className="btn-primary" onClick={() => window.location.reload()}>
+                        Obnovit stránku
+                    </button>
+                    <button className="btn-secondary" onClick={() => navigate('/')}>
+                        Zpět do menu
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (!db) return <div className={`loading-screen ${config.theme}`}>{config.loadingText}</div>;
 

@@ -13,7 +13,6 @@ export const preprocessQuery = (query) => {
         }
 
         const statement = statements[0];
-        console.log(statement.type);
         if (statement.type !== 'select') {
             throw new Error('V tvém příkazu jsou nějaká nehezká slova.');
         }

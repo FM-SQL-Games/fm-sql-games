@@ -393,3 +393,87 @@
     color: #ff3333;
     border-color: #ff3333;
 }
+
+.error-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #0f172a;
+    color: #f8fafc;
+    text-align: center;
+    padding: 20px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+.error-screen::before {
+    content: '⚠️';
+    font-size: 5rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.error-screen h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.error-screen p {
+    font-size: 1.1rem;
+    max-width: 500px;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    padding: 15px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #ef4444;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.error-screen .btn-primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.error-screen .btn-primary:hover {
+    background-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.error-screen .btn-secondary {
+    background-color: transparent;
+    color: #94a3b8;
+    border: 1px solid #475569;
+}
+
+.error-screen .btn-secondary:hover {
+    background-color: rgba(71, 85, 105, 0.2);
+    color: white;
+    border-color: #94a3b8;
+}
+
+.error-screen button {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.default-theme .error-screen {
+    background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+}

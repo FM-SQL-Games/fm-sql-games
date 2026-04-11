@@ -1,5 +1,4 @@
 import pytest
-import os
 from validate_game import remove_diacritics, slugify, extract_keywords, enrich_config
 
 # --- 1. Testy pro remove_diacritics  ---
