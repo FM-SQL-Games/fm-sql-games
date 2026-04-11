@@ -46,7 +46,7 @@ jobs:
           python-version: '3.10'
 
       - name: Spuštění validátoru (Python)
-        run: python scripts/validate_game.py
+        run: python src/scripts/validate_game.py
 
       - name: Commit a Push změn (Preprocessing)
         uses: stefanzweifel/git-auto-commit-action@v5
