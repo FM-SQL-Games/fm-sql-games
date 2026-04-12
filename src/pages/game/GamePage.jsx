@@ -46,6 +46,13 @@ export default function GamePage({ gameData }) {
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
 
+    /**
+     * Uloží aktuální stav hry do LocalStorage pro pozdější načtení.
+     * @param {number} newLastSuccess - Index poslední úspěšné scény
+     * @param {Array} newAnsArray - Pole s úspěšnými dotazy pro každou scénu
+     * @param {number} newScore - Aktuální skóre hráče
+     * @param {string} configId - Unikátní uložení konfigurace hry
+     */
     const saveToLocalStorage = useCallback(
         (newLastSuccess, newAnsArray, newScore) => {
             const rawData = localStorage.getItem('storage');
@@ -60,6 +67,17 @@ export default function GamePage({ gameData }) {
         [config.id]
     );
 
+    /**
+     * Přepne aktivní overlay.
+     * @param {string} type - Typ overlaye ('table', 'schema', 'hint')
+     */
+    const toggleOverlay = (type) => {
+        setActiveOverlay(type);
+    };
+
+    /**
+     * Načte uložený stav hry z LocalStorage.
+     */
     useEffect(() => {
         const rawData = localStorage.getItem('storage');
         const storage = rawData ? JSON.parse(rawData) : {};
@@ -72,10 +90,9 @@ export default function GamePage({ gameData }) {
         setIsFound(true);
     }, [config.id]);
 
-    const toggleOverlay = (type) => {
-        setActiveOverlay(type);
-    };
-
+    /**
+     * Automaticky posune zobrazení SQL editoru dolů, aby bylo vidět poslední zadávaný dotaz a jeho výsledek.
+     */
     useEffect(() => {
         const editor = document.querySelector('.sql-editor');
         if (editor) {
@@ -84,6 +101,10 @@ export default function GamePage({ gameData }) {
             }, 0);
         }
     }, [query]);
+
+    /**
+     * Inicializuje SQL databázi při načtení komponenty a při změně herních dat. V případě chyby při inicializaci uloží chybovou zprávu do stavu a loguje ji do SupaBase.
+     */
 
     useEffect(() => {
         initDatabase(gameData.createScript, gameData.insertScript).then(
@@ -102,6 +123,9 @@ export default function GamePage({ gameData }) {
         );
     }, [gameData, config.dbName, sessionId]);
 
+    /**
+     * Uloží stav hry do LocalStorage při změně relevantních proměnných.
+     */
     useEffect(() => {
         if (showLoadDialog) return;
         if (!isFound) return;
@@ -117,6 +141,10 @@ export default function GamePage({ gameData }) {
         saveToLocalStorage,
     ]);
 
+    /**
+     * Přejde na další scénu a načte do editoru úspěšný dotaz z této scény. Pokud už je hráč na poslední scéně, označí hru jako dokončenou.
+     */
+
     function nextScene() {
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
@@ -126,11 +154,17 @@ export default function GamePage({ gameData }) {
         }
     }
 
+    /**
+     *  Přejde na předchozí scénu a načte do editoru úspěšný dotaz z této scény.
+     */
     function prevScene() {
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
 
+    /**
+     * Přijme načtení uložené hry a nastaví stav komponenty podle uložených dat.
+     */
     const handleAcceptLoad = () => {
         setLastSuccessScene(foundData.lastSuccess);
         setSuccesfulAnwsersArray(foundData.ansArray);
@@ -140,11 +174,18 @@ export default function GamePage({ gameData }) {
         setQuery('SEM PIŠ DOTAZY');
     };
 
+    /**
+     * Odmítne načtení uložené hry a smaže uložený stav z LocalStorage.
+     */
+
     const handleDeclineLoad = () => {
         clearGameStorage();
         setShowLoadDialog(false);
     };
 
+    /**
+     * Vymaže uložený stav hry z LocalStorage pro aktuální konfiguraci hry.
+     */
     const clearGameStorage = () => {
         const rawData = localStorage.getItem('storage');
         if (rawData) {
@@ -154,6 +195,9 @@ export default function GamePage({ gameData }) {
         }
     };
 
+    /**
+     * Restartuje hru nastavením všech relevantních stavů na výchozí hodnoty a vymazáním uloženého stavu z LocalStorage.
+     */
     const handleRestart = () => {
         setIsGameFinished(false);
         setCurrentScene(1);
@@ -164,13 +208,23 @@ export default function GamePage({ gameData }) {
         resetScore();
     };
 
+    /**
+     * Vrátí hráče zpět do hlavního menu.
+     */
     const handleBackToMenu = () => {
         navigate('/');
     };
 
+    /**
+     * Vrátí hráče zpět na obrazovku nastavení hry, kde může zadat přezdívku a znovu spustit hru.
+     */
     const handleBackToSetup = () => {
         navigate(`/${config.id}`);
     };
+
+    /**
+     * Spustí SQL dotaz z editoru, zvaliduje ho, porovná výsledek s referenčním řešením a aktualizuje stav hry podle úspěšnosti dotazu. Také loguje každý pokus do SupaBase.
+     */
 
     const runSql = () => {
         setActiveOverlay('table');
@@ -249,10 +303,16 @@ export default function GamePage({ gameData }) {
         });
     };
 
+    /**
+     * Uloží finální dosažené skóre hráče do leaderboardu.
+     */
     const saveScoreToLeaderboard = () => {
         saveLeaderboardScore(config.dbName, playerName, score, sessionId);
     };
 
+    /**
+     * Vypočítá styl pro hlavní zobrazení scény, včetně pozadí a případného obrázku scény.
+     */
     const sceneStyle = {
         backgroundImage: currSceneData.img
             ? `url("${import.meta.env.BASE_URL}pageAssets/${config.assetFolder}/scenes/${currSceneData.img}")`

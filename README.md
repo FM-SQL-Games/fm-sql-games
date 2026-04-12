@@ -20,22 +20,27 @@ Pokročilejší modul s hackerskou tematikou zasazený do prostředí Technické
 * **CI/CD:** GitHub Actions - automatická kontrola integrity Pull Requestů
 
 ## Jak přidat svou novou hru?
-Projekt je navržen tak, aby kdokoliv mohl snadno přidat svou vlastní SQL výzvu bez nutnosti zasahovat do kódu. O vše se postará automatický validátor.
+Projekt je navržen tak, aby kdokoliv mohl snadno přidat svou vlastní SQL hru bez nutnosti zasahovat do kódu. O vše se postará automatický validátor.
 
-1. **Příprava větve**
-Vytvoř si novou větev s konvencí: `feature/add-game-[nazev-hry]`.
+1. **Fork repozitáře**
+    - Forkni si kopii repozitáře a naklonuj si ji k sobě, abys na ní mohl pracovat.
 
-2. **Umístění souborů**
-- **JSON s definicí:** `src/data/games/[nazev].json`
-- **Schéma databáze:** `public/assets/[nazev]_scheme.png`
-- **Assety scén (nepovinné):** `public/pageAssets/[ID_HRY]/scenes/[1.jpg, 2.jpg...]`
+2. **Příprava větve**
+    - Vytvoř si novou větev s konvencí: **`feature/add-game-[nazev-hry]`**.
 
-3. **Automatický preprocessing**
-Jakmile vytvoříš Pull Request, spustí se **GitHub Action**, která:
-    1. Zkontroluje integritu tvých SQL skriptů (create i insert)
-    2. Ověří, zda všechny scény mají funkční řešení (answer)
-    3. **Doplní metadata**: Automaticky vygeneruje ID, klíčová slova pro nápovědu a defaultní UI texty, pokud validace selže, vypíše  se konkrétní chyba (např. v SQL dotazu) přímo do GitHub Action v Pull Requestu.
-    4. Commitne "učesaný" JSON zpět do tvého PR.
+3. **Umístění souborů**
+    - **JSON s definicí:** `src/data/games/[nazev-hry].json` - návod na správnou strukturu v sekci 'Dokumentace herního JSONu'
+    - **Schéma databáze:** `public/assets/[nazev-hry]_scheme.png`
+    - **Assety scén (nepovinné):** `public/pageAssets/[nazev-hry]/scenes/[1.jpg, 2.jpg...]`
+    - Nakonec vše commitni a pushni to do své větve ve svém repozitáři.
+
+4. **Automatický preprocessing**
+    - Jakmile vytvoříš ve své větvi Pull Request, spustí se **GitHub Action**, která:
+    1. Zkontroluje integritu tvých SQL skriptů (create i insert).
+    2. Ověří, zda všechny scény mají funkční řešení (answer).
+    3. Doplní metadata: Automaticky vygeneruje ID, klíčová slova pro nápovědu a defaultní UI texty, pokud validace selže, vypíše se konkrétní chyba přímo do GitHub Action v Pull Requestu.
+    4. Commitne upravený JSON zpět do tvého PR.
+    - Po finální revizi kódu vývojářem bude tvá hra následně přidána mezi ostatní.
 
 ## Dokumentace herního JSONu
 Každá hra je specificky definována jedním JSON souborem. Validátor vyžaduje minimálně tyto parametry:

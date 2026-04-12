@@ -1,3 +1,4 @@
+import argparse
 import json
 import sqlite3
 import re
@@ -69,7 +70,7 @@ def enrich_config(config):
     
     return config, errors
 
-def validate_and_preprocess(file_path):
+def validate_and_preprocess(file_path, base_path):
     """
     Validuje a doplňuje metadata v JSON souboru s hrou.
     """
@@ -131,7 +132,7 @@ def validate_and_preprocess(file_path):
                 scene['img'] = f"{scene_id}.jpg"
 
             if asset_folder:
-                img_path = os.path.join('public', 'pageAssets', asset_folder, 'scenes', scene['img'])
+                img_path = os.path.join(base_path, 'public', 'pageAssets', asset_folder, 'scenes', scene['img'])
                 if not os.path.exists(img_path):
                     print(f"::warning file={file_path}::Obrázek scény '{img_path}' nebyl nalezen.")
 
@@ -143,14 +144,14 @@ def validate_and_preprocess(file_path):
     # Kontrola existence schématu
     schema_name = config.get('schemaImg')
     if schema_name:
-        schema_path = os.path.join('public', 'assets', schema_name)
+        schema_path = os.path.join(base_path, 'public', 'assets', schema_name)
         if not os.path.exists(schema_path):
             errors.append(f"Soubor schématu '{schema_name}' nebyl nalezen v public/assets/!")
 
     # Kontrola existence náhledového obrázku karty
     card_img = config.get('cardImage')
     if card_img:
-        card_path = os.path.join('public', card_img)
+        card_path = os.path.join(base_path, 'public', card_img.lstrip('/'))
         if not os.path.exists(card_path):
             print(f"::warning file={file_path}::Náhledový obrázek karty '{card_img}' nebyl nalezen.")
 
@@ -167,7 +168,12 @@ def validate_and_preprocess(file_path):
 
 
 if __name__ == "__main__":
-    folder = 'src/data/games'
+
+    parser = argparse.ArgumentParser(description="Validace a preprocessing SQL her.")
+    parser.add_argument("--path", default=".", help="Základní cesta k projektu (např. pr-data)")
+    args = parser.parse_args()
+    
+    folder = os.path.join(args.path, 'src', 'data', 'games')
     overall_success = True
 
     if not os.path.exists(folder):
@@ -176,7 +182,7 @@ if __name__ == "__main__":
         
     for filename in os.listdir(folder):
         if filename.endswith('.json'):
-            if not validate_and_preprocess(os.path.join(folder, filename)):
+            if not validate_and_preprocess(os.path.join(folder, filename), args.path):
                 overall_success = False
     
     if not overall_success:

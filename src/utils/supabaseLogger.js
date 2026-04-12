@@ -1,5 +1,14 @@
 import { supabase } from '../supabaseClient';
-
+/**
+ * Loguje každý pokus uživatele o provedení SQL dotazu do SupaBase.
+ * @param {Object} queryData - Data o SQL dotazu
+ * @param {string} queryData.gameName - Název hry
+ * @param {string} queryData.sceneId - ID scény
+ * @param {string} queryData.query - SQL dotaz
+ * @param {boolean} queryData.isCorrect - Indikátor správnosti dotazu
+ * @param {string|null} queryData.error - Chybová zpráva
+ * @param {string} queryData.sessionId - ID relace
+ */
 export const logQueryToSupabase = async (queryData) => {
     const { error } = await supabase.from('query_logs').insert([
         {
@@ -16,6 +25,13 @@ export const logQueryToSupabase = async (queryData) => {
     }
 };
 
+/**
+ * Uloží finální dosažené skóre hráče do leaderboardu.
+ * @param {string} gameName - Název hry
+ * @param {string} playerName - Přezdívka hráče
+ * @param {number} score - Celkový počet bodů
+ * @param {string} sessionId - ID relace
+ */
 export const saveLeaderboardScore = async (gameName, playerName, score, sessionId) => {
     const { error } = await supabase.from('leaderboard').insert([
         {
@@ -29,7 +45,11 @@ export const saveLeaderboardScore = async (gameName, playerName, score, sessionI
         console.error('Chyba při ukládání skóre:', error.message);
     }
 };
-
+/**
+ * Načte data z leaderboardu pro danou hru.
+ * @param {string} gameName - Název hry
+ * @returns {Promise<Array>} - Pole s daty z leaderboardu
+ */
 export const fetchLeaderboardData = async (gameName) => {
     try {
         const { data, error } = await supabase
@@ -51,7 +71,15 @@ export const fetchLeaderboardData = async (gameName) => {
         return [];
     }
 };
-
+/**
+ * Loguje chyby do SupaBase.
+ * @param {Object} errorData - Data o chybě
+ * @param {string} errorData.sessionId - ID relace
+ * @param {string} errorData.gameName - Název hry
+ * @param {string} errorData.type - Typ chyby
+ * @param {string} errorData.message - Chybová zpráva
+ * @param {string|null} errorData.stack - Stack trace
+ */
 export const logErrorToSupabase = async (errorData) => {
     const { error } = await supabase.from('error_logs').insert([
         {
