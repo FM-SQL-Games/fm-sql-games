@@ -12,9 +12,12 @@ export default function GameSetup({ gameData }) {
         if (playerName.trim().length < 3) {
             return;
         }
+        const sessionId = window.crypto?.randomUUID
+            ? window.crypto.randomUUID()
+            : `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         localStorage.setItem('sqlPlayerName', playerName.trim());
 
-        navigate(`/${config.id}/game`, { state: { playerName: playerName.trim() } });
+        navigate(`/${config.id}/game`, { state: { playerName: playerName.trim(), sessionId } });
     };
 
     const handleBack = () => {
