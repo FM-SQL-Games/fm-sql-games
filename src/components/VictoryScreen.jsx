@@ -10,6 +10,9 @@ export default function VictoryScreen({
     onSubmitScore,
 }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
+    /**
+     * Odesílá skóre hráče do leaderboardu a aktualizuje stav odeslání, aby zobrazil potvrzení o úspěšném odeslání.
+     */
     const handleSubmit = () => {
         onSubmitScore(playerName);
         setIsSubmitted(true);

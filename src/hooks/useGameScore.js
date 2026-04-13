@@ -1,5 +1,10 @@
 import { useState } from 'react';
 
+/**
+ * Vlastní React hook pro správu skóre ve hře. Udržuje celkové skóre hráče, počet pokusů a použití nápovědy pro aktuální scénu.
+ * Poskytuje funkce pro zaznamenávání chyb, použití nápovědy, načítání skóre, odevzdávání výsledků scény a resetování skóre.
+ * @returns {Object} - Objekt obsahující aktuální skóre, počet pokusů, indikátor použití nápovědy a funkce pro správu skóre.
+ */
 export const useGameScore = () => {
     const [totalScore, setTotalScore] = useState(0);
     const [sceneAttempts, setSceneAttempts] = useState(0);
@@ -9,18 +14,33 @@ export const useGameScore = () => {
     const HINT_PENALTY = 25;
     const MIN_SCORE_PER_SCENE = 10;
 
+    /**
+     * Zaznamená chybu hráče v aktuální scéně.
+     */
     const registerMistake = () => {
         setSceneAttempts((prev) => prev + 1);
     };
 
+    /**
+     * Zaznamená použití nápovědy hráčem v aktuální scéně.
+     */
     const registerHint = () => {
         setUsedHint(true);
     };
+
+    /**
+     * Načte celkové skóre hráče.
+     * @param {*} newScore - Nové skóre, které se načte jako aktuální celkové skóre.
+     */
 
     const loadScore = (newScore) => {
         setTotalScore(newScore);
     };
 
+    /**
+     * Odevzdá výsledky aktuální scény a aktualizuje celkové skóre.
+     * @returns {number} - Počet bodů získaných za aktuální scénu, který se přičte k celkovému skóre.
+     */
     const submitScene = () => {
         let earnedPoints = BASE_SCORE;
 
@@ -41,6 +61,9 @@ export const useGameScore = () => {
         return earnedPoints;
     };
 
+    /**
+     * Resetuje skóre a stav pokusů pro aktuální scénu.
+     */
     const resetScore = () => {
         setTotalScore(0);
         setSceneAttempts(0);

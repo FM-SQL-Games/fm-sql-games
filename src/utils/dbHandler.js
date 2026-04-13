@@ -1,5 +1,10 @@
 import initSqlJs from 'sql.js';
-
+/**
+ * Inicializuje SQL databázi s danými skripty pro vytvoření a naplnění tabulek.
+ * @param {string} createScript - SQL skript pro vytvoření tabulek
+ * @param {string} insertScript - SQL skript pro vložení dat do tabulek
+ * @returns {Promise<{db: SQL.Database|null, error: string|null}>} - Objekt obsahující instanci databáze a případnou chybu
+ */
 export const initDatabase = async (createScript, insertScript) => {
     try {
         const SQL = await initSqlJs({
@@ -20,7 +25,12 @@ export const initDatabase = async (createScript, insertScript) => {
         return { db: null, error: `Nepodařilo se spustit databázový engine: ${e.message}` };
     }
 };
-
+/**
+ * Spustí bezpečný SQL dotaz v databázi uvnitř transakce.
+ * @param {SQL.Database} db - Instance databáze
+ * @param {string} query - SQL dotaz
+ * @returns {Promise<{res: any|null, error: string|null}>} - Objekt obsahující výsledek dotazu a případnou chybu
+ */
 export const executeSafeQuery = (db, query) => {
     if (!db) {
         return { res: null, error: 'Chyba: Databáze není připravena k použití.' };

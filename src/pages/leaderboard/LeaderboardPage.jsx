@@ -18,6 +18,10 @@ export default function LeaderboardPage() {
     const [currentData, setCurrentData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    /**
+     * Načte data z leaderboardu pro aktuálně aktivní hru při změně aktivní záložky.
+     * Zobrazí načítací stav během načítání dat a aktualizuje zobrazení tabulky s novými daty po načtení.
+     */
     useEffect(() => {
         const loadData = async () => {
             if (!activeTab) return;
