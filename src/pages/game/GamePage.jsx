@@ -24,7 +24,7 @@ export default function GamePage({ gameData }) {
     const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
 
-    const { score, sceneAttempts, registerMistake, registerHint, loadScore, submitScene, resetScore } =
+    const { score, sceneAttempts, registerMistake, registerHint, loadScore, submitScene, resetScore, resetSceneState } =
         useGameScore();
 
     const config = gameData.config;
@@ -158,6 +158,8 @@ export default function GamePage({ gameData }) {
      */
 
     function nextScene() {
+        setShowAns(false)
+        resetSceneState()
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
@@ -170,6 +172,8 @@ export default function GamePage({ gameData }) {
      *  Přejde na předchozí scénu a načte do editoru úspěšný dotaz z této scény.
      */
     function prevScene() {
+        resetSceneState()
+        setShowAns(false)
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }

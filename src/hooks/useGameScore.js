@@ -27,9 +27,18 @@ export const useGameScore = () => {
      */
     const registerHint = () => {
         setUsedHint(true);
-        if(sceneAttempts > 10){
+        if(sceneAttempts > 9){
             setSawAns(true);
         }
+    };
+
+    /**
+     * Vynuluje data při přechodu scén
+     */
+    const resetSceneState = () => {
+        setSceneAttempts(0);
+        setUsedHint(false);
+        setSawAns(false);
     };
 
     /**
@@ -66,6 +75,7 @@ export const useGameScore = () => {
 
         setSceneAttempts(0);
         setUsedHint(false);
+        setSawAns(false);
         return earnedPoints;
     };
 
@@ -76,6 +86,7 @@ export const useGameScore = () => {
         setTotalScore(0);
         setSceneAttempts(0);
         setUsedHint(false);
+        setSawAns(false);
     };
 
     return {
@@ -87,5 +98,6 @@ export const useGameScore = () => {
         loadScore,
         submitScene,
         resetScore,
+        resetSceneState
     };
 };
