@@ -1,7 +1,7 @@
 {
     "config": {
         "title": "Zkouška",
-        "schemaImg": "Zkouska_scheme.png"
+        "schemaImg": "Zkouska_scheme.jpg"
     },
     "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER);",
     "insertScript": "INSERT INTO Engines (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
