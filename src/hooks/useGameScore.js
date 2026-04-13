@@ -9,6 +9,7 @@ export const useGameScore = () => {
     const [totalScore, setTotalScore] = useState(0);
     const [sceneAttempts, setSceneAttempts] = useState(0);
     const [usedHint, setUsedHint] = useState(false);
+    const [sawAns, setSawAns] = useState(false);
     const BASE_SCORE = 100;
     const MISTAKE_PENALTY = 10;
     const HINT_PENALTY = 25;
@@ -26,6 +27,9 @@ export const useGameScore = () => {
      */
     const registerHint = () => {
         setUsedHint(true);
+        if(sceneAttempts > 10){
+            setSawAns(true);
+        }
     };
 
     /**
@@ -52,6 +56,10 @@ export const useGameScore = () => {
 
         if (earnedPoints < MIN_SCORE_PER_SCENE) {
             earnedPoints = MIN_SCORE_PER_SCENE;
+        }
+
+        if(sawAns){
+            earnedPoints = 0;
         }
 
         setTotalScore((prev) => prev + earnedPoints);
