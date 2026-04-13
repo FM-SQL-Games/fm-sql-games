@@ -24,7 +24,7 @@ export default function GamePage({ gameData }) {
     const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
 
-    const { score, registerMistake, registerHint, loadScore, submitScene, resetScore } =
+    const { score, sceneAttempts, registerMistake, registerHint, loadScore, submitScene, resetScore, resetSceneState } =
         useGameScore();
 
     const config = gameData.config;
@@ -45,6 +45,7 @@ export default function GamePage({ gameData }) {
     const [foundData, setFoundData] = useState(null);
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
+    const [showAns, setShowAns] = useState(false);
 
     /**
      * Uloží aktuální stav hry do LocalStorage pro pozdější načtení.
@@ -142,10 +143,23 @@ export default function GamePage({ gameData }) {
     ]);
 
     /**
+     * Zobrazí finální odpověď po 10 špatných odpovědí
+     */
+
+    useEffect(()=>{
+        if(sceneAttempts > 9){
+            setShowAns(true);
+        }else{
+            setShowAns(false)
+        }
+    },[sceneAttempts])
+    /**
      * Přejde na další scénu a načte do editoru úspěšný dotaz z této scény. Pokud už je hráč na poslední scéně, označí hru jako dokončenou.
      */
 
     function nextScene() {
+        setShowAns(false)
+        resetSceneState()
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
@@ -158,6 +172,8 @@ export default function GamePage({ gameData }) {
      *  Přejde na předchozí scénu a načte do editoru úspěšný dotaz z této scény.
      */
     function prevScene() {
+        resetSceneState()
+        setShowAns(false)
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
@@ -398,7 +414,7 @@ export default function GamePage({ gameData }) {
                         📜 Schéma
                     </button>
                     <button
-                        className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''}`}
+                        className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''} ${showAns ? 'blink' : ''}`}
                         onClick={() => {
                             toggleOverlay('hint');
                             registerHint();
@@ -482,6 +498,12 @@ export default function GamePage({ gameData }) {
                                             </li>
                                         ))}
                                     </ul>
+                                    {showAns === true &&(
+                                        <div className='hint-ans-container'>
+                                            <strong className='hint-ans-header'>ODPOVĚĎ JE</strong>
+                                            <p className='hint-ans-text'>{currSceneData.answer}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <p className="hint-text">
