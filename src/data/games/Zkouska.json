@@ -1,7 +1,16 @@
 {
     "config": {
         "title": "Zkouška",
-        "schemaImg": "Zkouska_scheme.jpg"
+        "schemaImg": "Zkouska_scheme.jpg",
+        "id": "zkouska",
+        "dbName": "Zkouska",
+        "assetFolder": "Zkouska",
+        "active": true,
+        "theme": "default-theme",
+        "setupTitle": "Nová SQL Výzva",
+        "setupDescription": "Popis této hry zatím chybí.",
+        "btnText": "Hrát",
+        "loadingText": "Načítám..."
     },
     "createScript": "CREATE TABLE Engines (id INTEGER PRIMARY KEY, status TEXT, power_level INTEGER);",
     "insertScript": "INSERT INTO Engines (status, power_level) VALUES ('Stable', 100), ('Overheating', 120);",
@@ -9,7 +18,14 @@
         {
             "story": "Motor lodi je v nestabilním stavu. Potřebujeme zjistit jejich aktuální výkon.",
             "prompt": "Vypiš všechny sloupce z tabulky Engines.",
-            "answer": "SELECT * FROM Engines;"
+            "answer": "SELECT * FROM Engines;",
+            "id": 1,
+            "keywords": [
+                "SELECT",
+                "FROM"
+            ],
+            "img": "1.jpg"
         }
-    ]
+    ],
+    "number_of_scenes": 1
 }
