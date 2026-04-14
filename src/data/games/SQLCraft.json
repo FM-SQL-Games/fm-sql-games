@@ -24,7 +24,10 @@
             "story": "Otevíráš oči. Kolem tebe je jen nekonečná pláň složená z kostek. První věc, která tě napadne, je, zda v tomto rozlehlém světě je ještě někdo další.",
             "prompt": "Vypiš všechny hráče, kteří se nacházejí v tomto světě.",
             "answer": "SELECT * FROM Player;",
-            "keywords": ["SELECT", "FROM"]
+            "keywords": [
+                "SELECT",
+                "FROM"
+            ]
         },
         {
             "id": 2,
@@ -32,7 +35,10 @@
             "story": "Zdá se, že v tomto světě jsi skutečně sám. Ale co okolí? Postavíš se na nejvyšší kopec a rozhlížíš se do dálky. Na obzoru vidíš obrysy podivných staveb a úkazů. Musíš zjistit, co všechno se nachází v tvé blízkosti.",
             "prompt": "Podívej se, co máš v okolí (tabulka Surrounding).",
             "answer": "SELECT * FROM Surrounding;",
-            "keywords": ["SELECT", "FROM"]
+            "keywords": [
+                "SELECT",
+                "FROM"
+            ]
         },
         {
             "id": 3,
@@ -40,7 +46,11 @@
             "story": "Dlouhá chůze a průzkum si vybraly svou daň. Začíná ti kručet v břiše a tvůj ukazatel hladu povážlivě klesá. Rychle otevíráš svůj manuál přežití, abys zjistil, které z předmětů v tomto světě jsou bezpečné ke konzumaci.",
             "prompt": "Které itemy můžeš jíst? (typ 'Food')",
             "answer": "SELECT * FROM Item WHERE item_type = 'Food';",
-            "keywords": ["SELECT", "FROM", "WHERE"]
+            "keywords": [
+                "SELECT",
+                "FROM",
+                "WHERE"
+            ]
         },
         {
             "id": 4,
@@ -48,7 +58,11 @@
             "story": "Slunce začíná zapadat a obloha se barví do fialova. S přicházející tmou se z jeskyní a lesů ozývají děsivé zvuky. Víš, že ne všechno v tomto světě je přátelské. Musíš identifikovat jména všech nestvůr.",
             "prompt": "Přišla noc. Kterých mobů by ses měl bát? (hostilní mobové)",
             "answer": "SELECT mob_type FROM Mob WHERE is_hostile = 1;",
-            "keywords": ["SELECT", "FROM", "WHERE"]
+            "keywords": [
+                "SELECT",
+                "FROM",
+                "WHERE"
+            ]
         },
         {
             "id": 5,
@@ -56,7 +70,12 @@
             "story": "Vykoukneš z provizorního úkrytu a vidíš, že les je plný svítících očí. Uvědomuješ si, že hrozeb je víc, než jsi čekal. Musíš zjistit, kolika unikátním druhům monster nyní čelíš.",
             "prompt": "Kolik unikátních typů hostilních mobů se nachází v tvém světě?",
             "answer": "SELECT COUNT(*) AS Hostile_Mob_Count FROM Mob WHERE is_hostile = 1;",
-            "keywords": ["SELECT", "COUNT", "AS", "WHERE"]
+            "keywords": [
+                "SELECT",
+                "COUNT",
+                "AS",
+                "WHERE"
+            ]
         },
         {
             "id": 6,
@@ -64,7 +83,12 @@
             "story": "„To bylo o fous!“ vydechneš si, když odrazíš první nepřátele. Takhle to dál nejde, potřebuješ pořádnou zeď. Víš, že nejmenší opevnění vyžaduje alespoň 100 bloků. Musíš vědět, kolik stavebních bloků máš v inventáři, aby ses mohl rozhodnout, zda si stavbu můžeš dovolit a v klidu se vyspat.",
             "prompt": "Kolik bloků máš celkem v inventáři?",
             "answer": "SELECT SUM(II.amount) AS Total_Block_Count FROM InventoryItem II JOIN Item I ON II.item_id = I.item_id WHERE I.item_type = 'Block';",
-            "keywords": ["SUM", "JOIN", "ON", "WHERE"]
+            "keywords": [
+                "SUM",
+                "JOIN",
+                "ON",
+                "WHERE"
+            ]
         },
         {
             "id": 7,
@@ -72,7 +96,12 @@
             "story": "Opevnění stojí a ty jsi v bezpečí. Teď začínáš přemýšlet o expanzi. Zajímá tě, které ze vzdálených struktur jsou nejvíce rozmanité a obývá je velké množství druhů obyvatel, ať už přátelských nebo ne.",
             "prompt": "Vypiš typy struktur, kde bydlí alespoň 3 různí mobové.",
             "answer": "SELECT S.structure_type FROM Structure S JOIN Inhabits I ON S.structure_id = I.structure_id GROUP BY S.structure_type HAVING COUNT(I.mob_id) > 2;",
-            "keywords": ["JOIN", "GROUP BY", "HAVING", "COUNT"]
+            "keywords": [
+                "JOIN",
+                "GROUP BY",
+                "HAVING",
+                "COUNT"
+            ]
         },
         {
             "id": 8,
@@ -80,7 +109,11 @@
             "story": "Pasivní obrana ti nestačí. Tvým největším snem je vykovat legendární diamantový meč. Pokud chceš získat diamanty, musíš vyrazit do hlubin, ale nejdříve potřebuješ pořádné zbraně i nářadí. Udělej si ucelený seznam všeho, co lze vyrobit.",
             "prompt": "Seznam všech zbraní a všech nástrojů",
             "answer": "SELECT name, 'Weapon' AS Category FROM Item WHERE item_type = 'Weapon' UNION SELECT name, 'Tool' AS Category FROM Item WHERE item_type = 'Tool';",
-            "keywords": ["UNION", "AS", "WHERE"]
+            "keywords": [
+                "UNION",
+                "AS",
+                "WHERE"
+            ]
         },
         {
             "id": 9,
@@ -88,7 +121,10 @@
             "story": "Proč všechno vyrábět, když svět je plný pokladů? Rozhodneš se porovnat předměty v truhlách ruin s těmi, co už máš u sebe. Chceš vidět jen ty věci, které ti v inventáři ještě chybí.",
             "prompt": "Jaké předměty, které ještě nemáš, můžeš získat ze struktur?",
             "answer": "SELECT I.name FROM Loot L JOIN Item I ON L.item_id = I.item_id EXCEPT SELECT I.name FROM InventoryItem II JOIN Item I ON II.item_id = I.item_id;",
-            "keywords": ["JOIN", "EXCEPT"]
+            "keywords": [
+                "JOIN",
+                "EXCEPT"
+            ]
         },
         {
             "id": 10,
@@ -96,7 +132,11 @@
             "story": "Provádíš poslední důkladnou revizi. Chceš vidět kompletní katalog všech dostupných věcí a u nich mít černé na bílém, kolik kusů jich vlastníš, i kdyby to měla být nula.",
             "prompt": "Vypiš všechny předměty a množství v tvém batohu.",
             "answer": "SELECT I.name, IFNULL(II.amount, 0) AS Inventory_Count FROM Item I LEFT JOIN InventoryItem II ON I.item_id = II.item_id;",
-            "keywords": ["LEFT JOIN", "IFNULL", "AS"]
+            "keywords": [
+                "LEFT JOIN",
+                "IFNULL",
+                "AS"
+            ]
         },
         {
             "id": 11,
@@ -104,7 +144,12 @@
             "story": "Diamanty jsou vzácné. Kolují legendy, že některé mocné bytosti je střeží přímo ve svém nitru. Pokus se vyvolat jména monster, která mohou drahokam po své porážce zanechat.",
             "prompt": "Najdi jména mobů, kteří po smrti upouštějí diamanty.",
             "answer": "SELECT mob_type FROM Mob WHERE mob_id IN (SELECT mob_id FROM Drops WHERE item_id = (SELECT item_id FROM Item WHERE name = 'Diamond'));",
-            "keywords": ["WHERE", "IN", "SELECT", "FROM"]
+            "keywords": [
+                "WHERE",
+                "IN",
+                "SELECT",
+                "FROM"
+            ]
         },
         {
             "id": 12,
@@ -112,7 +157,11 @@
             "story": "Lov na moby je riskantní. Rozkládáš mapy dřívějších průzkumníků a zjišťuješ, že diamanty se občas generují i v truhlách dávných chrámů. Musíš prověřit záznamy o těchto místech.",
             "prompt": "Vypiš struktury, které obsahují alespoň jeden diamant jako Loot.",
             "answer": "SELECT structure_type FROM Structure S WHERE EXISTS (SELECT 1 FROM Loot L WHERE L.structure_id = S.structure_id AND L.item_id = (SELECT item_id FROM Item WHERE name = 'Diamond'));",
-            "keywords": ["WHERE", "EXISTS", "AND"]
+            "keywords": [
+                "WHERE",
+                "EXISTS",
+                "AND"
+            ]
         },
         {
             "id": 13,
@@ -120,7 +169,14 @@
             "story": "Čím blíže jsi k diamantům, tím silnější jsou jejich strážci. Musíš identifikovat skutečné predátory. Ty, co mají více životů, než je průměr, a obývají více než jednu strukturu. Představují totiž největší hrozbu pro tvou plánovanou cestu.",
             "prompt": "Najdi silné moby (zdraví > průměr) vyskytující se ve více než jedné struktuře.",
             "answer": "SELECT mob_type, health FROM Mob WHERE health > (SELECT AVG(health) FROM Mob) AND mob_id IN (SELECT mob_id FROM Inhabits GROUP BY mob_id HAVING COUNT(structure_id) > 1);",
-            "keywords": ["WHERE", "AVG", "IN", "GROUP BY", "HAVING", "COUNT"]
+            "keywords": [
+                "WHERE",
+                "AVG",
+                "IN",
+                "GROUP BY",
+                "HAVING",
+                "COUNT"
+            ]
         },
         {
             "id": 14,
@@ -128,7 +184,11 @@
             "story": "Hledáš skutečnou elitu mezi monstry. Chceš znát ty hostilní stvůry, které jsou tak silné, že i ta nejslabší z nich má více životů než jakékoliv mírumilovné zvíře v tomto světě.",
             "prompt": "Kteří hostilní mobové mají více životů než KAŽDÝ jeden pasivní mob?",
             "answer": "SELECT mob_type, health FROM Mob WHERE is_hostile = 1 AND health > (SELECT MAX(health) FROM Mob WHERE is_hostile = 0);",
-            "keywords": ["WHERE", "AND", "MAX"]
+            "keywords": [
+                "WHERE",
+                "AND",
+                "MAX"
+            ]
         },
         {
             "id": 15,
@@ -136,7 +196,12 @@
             "story": "Nechceš riskovat život v každé polorozpadlé chatrči. Hledáš místa, kde celkový součet předmětů v truhlách přesahuje deset kusů. To je tvoje nová mapa bohatství.",
             "prompt": "Najdi souřadnice (X, Y) struktur, které obsahují celkem více než 10 kusů lootu.",
             "answer": "SELECT S.x_coordinate, S.y_coordinate, ST.structure_type FROM Surrounding S JOIN Structure ST ON S.structure_id = ST.structure_id JOIN Loot L ON ST.structure_id = L.structure_id GROUP BY S.x_coordinate, S.y_coordinate, ST.structure_type HAVING SUM(L.amount) > 10;",
-            "keywords": ["JOIN", "GROUP BY", "HAVING", "SUM"]
+            "keywords": [
+                "JOIN",
+                "GROUP BY",
+                "HAVING",
+                "SUM"
+            ]
         },
         {
             "id": 16,
@@ -144,7 +209,13 @@
             "story": "Nejmocnější nástroje vyžadují ingredience vybojované v těžkém zápase. Musíš vyfiltrovat recepty, které jsou přímo závislé na kořisti získané z hostilních monster.",
             "prompt": "Vypiš názvy předmětů (výsledky receptů), které vyžadují ingredienci dropovanou hostilními moby a zároveň nenalezitelnou v truhlách.",
             "answer": "SELECT DISTINCT I.name FROM Recipe R JOIN Ingredient ING ON R.recipe_id = ING.recipe_id JOIN Item I ON R.result = I.item_id WHERE ING.item_id IN (SELECT item_id FROM Drops D JOIN Mob M ON D.mob_id = M.mob_id WHERE M.is_hostile = 1 EXCEPT SELECT item_id FROM Loot);",
-            "keywords": ["DISTINCT", "JOIN", "WHERE", "IN", "EXCEPT"]
+            "keywords": [
+                "DISTINCT",
+                "JOIN",
+                "WHERE",
+                "IN",
+                "EXCEPT"
+            ]
         },
         {
             "id": 17,
@@ -152,7 +223,14 @@
             "story": "Teď jde o to, kolik strážců tvé budoucí poklady hlídá. Analyzuješ každou strukturu a hledáš ty, které jsou doslova zamořené nebezpečnými monstry. Musíš si je označit jako prioritní cíle.",
             "prompt": "Vypiš typ struktury a počet hostilních mobů, pokud jich je tam víc než jeden.",
             "answer": "SELECT ST.structure_type, COUNT(I.mob_id) AS Hostile_Count FROM Structure ST JOIN Inhabits I ON ST.structure_id = I.structure_id JOIN Mob M ON I.mob_id = M.mob_id WHERE M.is_hostile = 1 GROUP BY ST.structure_type HAVING COUNT(I.mob_id) > 1;",
-            "keywords": ["COUNT", "AS", "JOIN", "WHERE", "GROUP BY", "HAVING"]
+            "keywords": [
+                "COUNT",
+                "AS",
+                "JOIN",
+                "WHERE",
+                "GROUP BY",
+                "HAVING"
+            ]
         },
         {
             "id": 18,
@@ -160,7 +238,13 @@
             "story": "Musíš uvolnit místo v batohu. Nechceš se ale zbavit ničeho cenného. Provedeš inventuru a vyfiltruješ ty suroviny, kterých máš nadprůměrné množství a které se dají využít v receptech pro tvůj další postup.",
             "prompt": "Názvy a počty předmětů v inventáři (count > průměr), které jsou zároveň ingrediencemi.",
             "answer": "SELECT I.name, II.amount FROM InventoryItem II JOIN Item I ON II.item_id = I.item_id WHERE II.amount > (SELECT AVG(amount) FROM InventoryItem) AND I.item_id IN (SELECT item_id FROM Ingredient);",
-            "keywords": ["JOIN", "WHERE", "AVG", "AND", "IN"]
+            "keywords": [
+                "JOIN",
+                "WHERE",
+                "AVG",
+                "AND",
+                "IN"
+            ]
         },
         {
             "id": 19,
@@ -168,7 +252,13 @@
             "story": "Už máš dost neustálého boje. Hledáš snadnější cestu. Strukturu, která skrývá diamanty, ale je přitom naprosto opuštěná. Propočítáváš vzdálenost k těmto tichým místům, abys mohl naplánovat svou cestu k cíli.",
             "prompt": "Najdi blízké struktury (do 500 bloků) s diamanty, kde nikdo nebydlí.",
             "answer": "SELECT ST.structure_type, S.x_coordinate, S.y_coordinate FROM Player P, Structure ST JOIN Surrounding S ON ST.structure_id = S.structure_id JOIN Loot L ON ST.structure_id = L.structure_id LEFT JOIN Inhabits INH ON ST.structure_id = INH.structure_id WHERE P.nickname = 'SQL_Hero' AND L.item_id = (SELECT item_id FROM Item WHERE name = 'Diamond') AND INH.mob_id IS NULL AND ((S.x_coordinate - P.x_coordinate)*(S.x_coordinate - P.x_coordinate) + (S.y_coordinate - P.y_coordinate)*(S.y_coordinate - P.y_coordinate)) <= 500;",
-            "keywords": ["JOIN", "LEFT JOIN", "WHERE", "AND", "IS NULL"]
+            "keywords": [
+                "JOIN",
+                "LEFT JOIN",
+                "WHERE",
+                "AND",
+                "IS NULL"
+            ]
         },
         {
             "id": 20,
@@ -176,7 +266,12 @@
             "story": "Vracíš se do své pevnosti a přistupuješ k pracovnímu stolu. Než udeříš kladivem, provedeš finální kalkulaci. Pokud tvůj seznam chybějících položek pro vysněný meč zůstane prázdný, legenda se konečně stane skutečností.",
             "prompt": "Zjisti, které suroviny ti stále CHYBÍ pro výrobu tvého Diamantového meče.",
             "answer": "SELECT I.name FROM Ingredient ING JOIN Recipe R ON ING.recipe_id = R.recipe_id JOIN Item Result ON R.result = Result.item_id JOIN Item I ON ING.item_id = I.item_id WHERE Result.name = 'Diamond Sword' EXCEPT SELECT I.name FROM InventoryItem INV JOIN Item I ON INV.item_id = I.item_id;",
-            "keywords": ["JOIN", "WHERE", "EXCEPT", "SELECT"]
+            "keywords": [
+                "JOIN",
+                "WHERE",
+                "EXCEPT",
+                "SELECT"
+            ]
         }
     ]
 }
