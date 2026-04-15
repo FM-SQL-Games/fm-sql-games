@@ -24,16 +24,24 @@ export default function GamePage({ gameData }) {
     const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
 
-    const { score, sceneAttempts, registerMistake, registerHint, loadScore, submitScene, resetScore, resetSceneState } =
-        useGameScore();
+    const {
+        score,
+        sceneAttempts,
+        registerMistake,
+        registerHint,
+        loadScore,
+        submitScene,
+        resetScore,
+        resetSceneState,
+    } = useGameScore();
 
     const config = gameData.config;
 
     const [activeOverlay, setActiveOverlay] = useState('schema');
     const [db, setDb] = useState(null);
     const [dbInitError, setDbInitError] = useState(null);
-    const [currentScene, setCurrentScene] = useState(1);
-    const [lastSuccessScene, setLastSuccessScene] = useState(0);
+    const [currentScene, setCurrentScene] = useState(20);
+    const [lastSuccessScene, setLastSuccessScene] = useState(19);
     const currSceneData = gameData.scenes[currentScene - 1];
     const [query, setQuery] = useState('SEM PIŠ DOTAZY');
     const [result, setResult] = useState(null);
@@ -146,20 +154,20 @@ export default function GamePage({ gameData }) {
      * Zobrazí finální odpověď po 10 špatných odpovědí
      */
 
-    useEffect(()=>{
-        if(sceneAttempts > 9){
+    useEffect(() => {
+        if (sceneAttempts > 9) {
             setShowAns(true);
-        }else{
-            setShowAns(false)
+        } else {
+            setShowAns(false);
         }
-    },[sceneAttempts])
+    }, [sceneAttempts]);
     /**
      * Přejde na další scénu a načte do editoru úspěšný dotaz z této scény. Pokud už je hráč na poslední scéně, označí hru jako dokončenou.
      */
 
     function nextScene() {
-        setShowAns(false)
-        resetSceneState()
+        setShowAns(false);
+        resetSceneState();
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
@@ -172,8 +180,8 @@ export default function GamePage({ gameData }) {
      *  Přejde na předchozí scénu a načte do editoru úspěšný dotaz z této scény.
      */
     function prevScene() {
-        resetSceneState()
-        setShowAns(false)
+        resetSceneState();
+        setShowAns(false);
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
@@ -498,10 +506,10 @@ export default function GamePage({ gameData }) {
                                             </li>
                                         ))}
                                     </ul>
-                                    {showAns === true &&(
-                                        <div className='hint-ans-container'>
-                                            <strong className='hint-ans-header'>ODPOVĚĎ JE</strong>
-                                            <p className='hint-ans-text'>{currSceneData.answer}</p>
+                                    {showAns === true && (
+                                        <div className="hint-ans-container">
+                                            <strong className="hint-ans-header">ODPOVĚĎ JE</strong>
+                                            <p className="hint-ans-text">{currSceneData.answer}</p>
                                         </div>
                                     )}
                                 </div>

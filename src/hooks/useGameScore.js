@@ -27,7 +27,7 @@ export const useGameScore = () => {
      */
     const registerHint = () => {
         setUsedHint(true);
-        if(sceneAttempts > 9){
+        if (sceneAttempts > 9) {
             setSawAns(true);
         }
     };
@@ -67,7 +67,7 @@ export const useGameScore = () => {
             earnedPoints = MIN_SCORE_PER_SCENE;
         }
 
-        if(sawAns){
+        if (sawAns) {
             earnedPoints = 0;
         }
 
@@ -98,6 +98,6 @@ export const useGameScore = () => {
         loadScore,
         submitScene,
         resetScore,
-        resetSceneState
+        resetSceneState,
     };
 };
