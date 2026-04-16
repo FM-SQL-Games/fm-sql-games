@@ -175,3 +175,9 @@
     font-size: 1.1rem;
     animation: popIn 0.3s ease-out;
 }
+
+.warning {
+    color: #ef7d00;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
