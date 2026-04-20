@@ -8,15 +8,24 @@ export default function GameSetup({ gameData }) {
 
     const config = gameData.config;
 
+    /**
+     * Spustí hru přechodem na obrazovku s hrou a předáním potřebných informací o hráči a relaci, uloží jméno hráče do LocalStorage pro případné budoucí použití.
+     */
     const handleStart = () => {
         if (playerName.trim().length < 3) {
             return;
         }
+        const sessionId = window.crypto?.randomUUID
+            ? window.crypto.randomUUID()
+            : `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         localStorage.setItem('sqlPlayerName', playerName.trim());
 
-        navigate(`/${config.id}/game`, { state: { playerName: playerName.trim() } });
+        navigate(`/${config.id}/game`, { state: { playerName: playerName.trim(), sessionId } });
     };
 
+    /**
+     * Vrátí hráče zpět na hlavní obrazovku, kde může vybrat jinou hru nebo znovu spustit tuto hru.
+     */
     const handleBack = () => {
         navigate('/');
     };

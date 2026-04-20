@@ -3,6 +3,7 @@ import './LeaderboardPage.css';
 import Navbar from '../../components/Navbar';
 import { gameLibrary } from '../../data/gameLibrary';
 import { fetchLeaderboardData } from '../../utils/supabaseLogger';
+import { isSupabaseConfigured } from '../../supabaseClient';
 
 export default function LeaderboardPage() {
     const availableGames = gameLibrary
@@ -18,6 +19,10 @@ export default function LeaderboardPage() {
     const [currentData, setCurrentData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    /**
+     * Načte data z leaderboardu pro aktuálně aktivní hru při změně aktivní záložky.
+     * Zobrazí načítací stav během načítání dat a aktualizuje zobrazení tabulky s novými daty po načtení.
+     */
     useEffect(() => {
         const loadData = async () => {
             if (!activeTab) return;
@@ -62,6 +67,14 @@ export default function LeaderboardPage() {
                                 <tr>
                                     <td colSpan="4" className="empty-state">
                                         Načítám data z databáze...
+                                    </td>
+                                </tr>
+                            ) : !isSupabaseConfigured ? (
+                                <tr>
+                                    <td colSpan="4" className="empty-state warning">
+                                        Aplikace běží v lokálním testovacím režimu.
+                                        <br />
+                                        Připojení k online žebříčku není dostupné.
                                     </td>
                                 </tr>
                             ) : currentData.length > 0 ? (

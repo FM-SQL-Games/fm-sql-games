@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './VictoryScreen.css';
+import { isSupabaseConfigured } from '../supabaseClient';
 
 export default function VictoryScreen({
     score,
@@ -10,6 +11,9 @@ export default function VictoryScreen({
     onSubmitScore,
 }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
+    /**
+     * Odesílá skóre hráče do leaderboardu a aktualizuje stav odeslání, aby zobrazil potvrzení o úspěšném odeslání.
+     */
     const handleSubmit = () => {
         onSubmitScore(playerName);
         setIsSubmitted(true);
@@ -32,7 +36,13 @@ export default function VictoryScreen({
                     </div>
                 </div>
                 <div className="leaderboard-submission">
-                    {!isSubmitted ? (
+                    {!isSupabaseConfigured ? (
+                        <div className="submission-confirm">
+                            <p className="leaderboard-hint warning">
+                                Lokální režim - Ukládání do online žebříčku je deaktivováno.
+                            </p>
+                        </div>
+                    ) : !isSubmitted ? (
                         <div className="submission-confirm">
                             <p className="leaderboard-hint">
                                 Přeješ si uložit výsledek do leaderboardu pod přezdívkou{' '}

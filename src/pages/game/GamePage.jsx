@@ -5,7 +5,11 @@ import 'prismjs/components/prism-sql';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { preprocessQuery, isSuccessful } from '../../utils/sqlValidator';
 import { initDatabase, executeSafeQuery } from '../../utils/dbHandler';
-import { logQueryToSupabase, saveLeaderboardScore } from '../../utils/supabaseLogger';
+import {
+    logQueryToSupabase,
+    saveLeaderboardScore,
+    logErrorToSupabase,
+} from '../../utils/supabaseLogger';
 import { sqlDictionary } from '../../data/sqlDictionary';
 import { useGameScore } from '../../hooks/useGameScore';
 import VictoryScreen from '../../components/VictoryScreen';
@@ -17,15 +21,25 @@ export default function GamePage({ gameData }) {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
 
-    const { score, registerMistake, registerHint, loadScore, submitScene, resetScore } =
-        useGameScore();
+    const {
+        score,
+        sceneAttempts,
+        registerMistake,
+        registerHint,
+        loadScore,
+        submitScene,
+        resetScore,
+        resetSceneState,
+    } = useGameScore();
 
     const config = gameData.config;
 
     const [activeOverlay, setActiveOverlay] = useState('schema');
     const [db, setDb] = useState(null);
+    const [dbInitError, setDbInitError] = useState(null);
     const [currentScene, setCurrentScene] = useState(1);
     const [lastSuccessScene, setLastSuccessScene] = useState(0);
     const currSceneData = gameData.scenes[currentScene - 1];
@@ -39,7 +53,15 @@ export default function GamePage({ gameData }) {
     const [foundData, setFoundData] = useState(null);
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
+    const [showAns, setShowAns] = useState(false);
 
+    /**
+     * Uloží aktuální stav hry do LocalStorage pro pozdější načtení.
+     * @param {number} newLastSuccess - Index poslední úspěšné scény
+     * @param {Array} newAnsArray - Pole s úspěšnými dotazy pro každou scénu
+     * @param {number} newScore - Aktuální skóre hráče
+     * @param {string} configId - Unikátní uložení konfigurace hry
+     */
     const saveToLocalStorage = useCallback(
         (newLastSuccess, newAnsArray, newScore) => {
             const rawData = localStorage.getItem('storage');
@@ -54,6 +76,17 @@ export default function GamePage({ gameData }) {
         [config.id]
     );
 
+    /**
+     * Přepne aktivní overlay.
+     * @param {string} type - Typ overlaye ('table', 'schema', 'hint')
+     */
+    const toggleOverlay = (type) => {
+        setActiveOverlay(type);
+    };
+
+    /**
+     * Načte uložený stav hry z LocalStorage.
+     */
     useEffect(() => {
         const rawData = localStorage.getItem('storage');
         const storage = rawData ? JSON.parse(rawData) : {};
@@ -66,10 +99,9 @@ export default function GamePage({ gameData }) {
         setIsFound(true);
     }, [config.id]);
 
-    const toggleOverlay = (type) => {
-        setActiveOverlay(type);
-    };
-
+    /**
+     * Automaticky posune zobrazení SQL editoru dolů, aby bylo vidět poslední zadávaný dotaz a jeho výsledek.
+     */
     useEffect(() => {
         const editor = document.querySelector('.sql-editor');
         if (editor) {
@@ -79,12 +111,30 @@ export default function GamePage({ gameData }) {
         }
     }, [query]);
 
-    useEffect(() => {
-        initDatabase(gameData.createScript, gameData.insertScript).then((database) =>
-            setDb(database)
-        );
-    }, [gameData]);
+    /**
+     * Inicializuje SQL databázi při načtení komponenty a při změně herních dat. V případě chyby při inicializaci uloží chybovou zprávu do stavu a loguje ji do SupaBase.
+     */
 
+    useEffect(() => {
+        initDatabase(gameData.createScript, gameData.insertScript).then(
+            ({ db: database, error: initError }) => {
+                if (initError) {
+                    setDbInitError(initError);
+                    logErrorToSupabase({
+                        sessionId,
+                        gameName: config.dbName,
+                        type: 'DB_INIT_FAIL',
+                        message: initError,
+                    });
+                }
+                setDb(database);
+            }
+        );
+    }, [gameData, config.dbName, sessionId]);
+
+    /**
+     * Uloží stav hry do LocalStorage při změně relevantních proměnných.
+     */
     useEffect(() => {
         if (showLoadDialog) return;
         if (!isFound) return;
@@ -100,7 +150,24 @@ export default function GamePage({ gameData }) {
         saveToLocalStorage,
     ]);
 
+    /**
+     * Zobrazí finální odpověď po 10 špatných odpovědí
+     */
+
+    useEffect(() => {
+        if (sceneAttempts > 9) {
+            setShowAns(true);
+        } else {
+            setShowAns(false);
+        }
+    }, [sceneAttempts]);
+    /**
+     * Přejde na další scénu a načte do editoru úspěšný dotaz z této scény. Pokud už je hráč na poslední scéně, označí hru jako dokončenou.
+     */
+
     function nextScene() {
+        setShowAns(false);
+        resetSceneState();
         if (currentScene >= gameData.number_of_scenes) {
             setIsGameFinished(true);
         } else {
@@ -109,13 +176,20 @@ export default function GamePage({ gameData }) {
         }
     }
 
+    /**
+     *  Přejde na předchozí scénu a načte do editoru úspěšný dotaz z této scény.
+     */
     function prevScene() {
+        resetSceneState();
+        setShowAns(false);
         setQuery(succesfulAnwsersArray[currentScene - 2]);
         setCurrentScene((prev) => prev - 1);
     }
 
+    /**
+     * Přijme načtení uložené hry a nastaví stav komponenty podle uložených dat.
+     */
     const handleAcceptLoad = () => {
-        console.log(foundData);
         setLastSuccessScene(foundData.lastSuccess);
         setSuccesfulAnwsersArray(foundData.ansArray);
         loadScore(foundData.score);
@@ -124,11 +198,18 @@ export default function GamePage({ gameData }) {
         setQuery('SEM PIŠ DOTAZY');
     };
 
+    /**
+     * Odmítne načtení uložené hry a smaže uložený stav z LocalStorage.
+     */
+
     const handleDeclineLoad = () => {
         clearGameStorage();
         setShowLoadDialog(false);
     };
 
+    /**
+     * Vymaže uložený stav hry z LocalStorage pro aktuální konfiguraci hry.
+     */
     const clearGameStorage = () => {
         const rawData = localStorage.getItem('storage');
         if (rawData) {
@@ -138,6 +219,9 @@ export default function GamePage({ gameData }) {
         }
     };
 
+    /**
+     * Restartuje hru nastavením všech relevantních stavů na výchozí hodnoty a vymazáním uloženého stavu z LocalStorage.
+     */
     const handleRestart = () => {
         setIsGameFinished(false);
         setCurrentScene(1);
@@ -148,13 +232,23 @@ export default function GamePage({ gameData }) {
         resetScore();
     };
 
+    /**
+     * Vrátí hráče zpět do hlavního menu.
+     */
     const handleBackToMenu = () => {
         navigate('/');
     };
 
+    /**
+     * Vrátí hráče zpět na obrazovku nastavení hry, kde může zadat přezdívku a znovu spustit hru.
+     */
     const handleBackToSetup = () => {
         navigate(`/${config.id}`);
     };
+
+    /**
+     * Spustí SQL dotaz z editoru, zvaliduje ho, porovná výsledek s referenčním řešením a aktualizuje stav hry podle úspěšnosti dotazu. Také loguje každý pokus do SupaBase.
+     */
 
     const runSql = () => {
         setActiveOverlay('table');
@@ -163,6 +257,7 @@ export default function GamePage({ gameData }) {
 
         let currentError = null;
         let isCorrect = false;
+        let forcePass = false;
         try {
             const cleanQuery = preprocessQuery(query);
 
@@ -171,9 +266,27 @@ export default function GamePage({ gameData }) {
                 throw new Error(dbError);
             }
 
-            const referenceRes = db.exec(currSceneData.answer);
+            let referenceRes;
+            try {
+                referenceRes = db.exec(currSceneData.answer);
+            } catch (refError) {
+                forcePass = true;
+                logErrorToSupabase({
+                    sessionId,
+                    gameName: config.dbName,
+                    type: 'REF_QUERY_FAIL',
+                    message: `Scéna ${currentScene}: ${refError.message}`,
+                    stack: refError.stack,
+                });
+            }
+            
 
-            isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules);
+            if (forcePass) {
+                isCorrect = true;
+                console.warn('Uživatel prošel přes Force Pass (chyba v zadání).');
+            } else {
+                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules);
+            }
 
             if (isCorrect) {
                 const newArray = [...succesfulAnwsersArray];
@@ -182,6 +295,9 @@ export default function GamePage({ gameData }) {
                 if (currentScene - 1 == lastSuccessScene) {
                     setLastSuccessScene((prev) => prev + 1);
                     submitScene();
+                }
+                if (forcePass) {
+                    setError('Z důvodu technické chyby v zadání tě pouštíme dál!');
                 }
             } else {
                 registerMistake();
@@ -208,19 +324,49 @@ export default function GamePage({ gameData }) {
             query: query,
             isCorrect: isCorrect,
             error: currentError,
+            sessionId,
         });
     };
 
-    const saveScoreToLeaderboard = (playerName) => {
-        saveLeaderboardScore(config.dbName, playerName, score);
+    /**
+     * Uloží finální dosažené skóre hráče do leaderboardu.
+     */
+    const saveScoreToLeaderboard = () => {
+        saveLeaderboardScore(config.dbName, playerName, score, sessionId);
     };
 
+    /**
+     * Vypočítá styl pro hlavní zobrazení scény, včetně pozadí a případného obrázku scény.
+     */
     const sceneStyle = {
         backgroundImage: currSceneData.img
             ? `url("${import.meta.env.BASE_URL}pageAssets/${config.assetFolder}/scenes/${currSceneData.img}")`
             : 'none',
         backgroundColor: '#f2f2c0',
     };
+
+    if (dbInitError) {
+        return (
+            <div className={`error-screen ${config.theme}`}>
+                <h1>Systémová chyba</h1>
+                <p>
+                    <strong>Detail:</strong> {dbInitError}
+                    <br />
+                    <br />
+                    Nepodařilo se správně připravit herní prostředí. Zkontroluj připojení k
+                    internetu nebo zkus stránku obnovit.
+                </p>
+                <div className="error-actions">
+                    <button className="btn-primary" onClick={() => window.location.reload()}>
+                        Obnovit stránku
+                    </button>
+                    <button className="btn-secondary" onClick={() => navigate('/')}>
+                        Zpět do menu
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (!db) return <div className={`loading-screen ${config.theme}`}>{config.loadingText}</div>;
 
@@ -277,7 +423,7 @@ export default function GamePage({ gameData }) {
                         📜 Schéma
                     </button>
                     <button
-                        className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''}`}
+                        className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''} ${showAns ? 'blink' : ''}`}
                         onClick={() => {
                             toggleOverlay('hint');
                             registerHint();
@@ -361,6 +507,12 @@ export default function GamePage({ gameData }) {
                                             </li>
                                         ))}
                                     </ul>
+                                    {showAns === true && (
+                                        <div className="hint-ans-container">
+                                            <strong className="hint-ans-header">ODPOVĚĎ JE</strong>
+                                            <p className="hint-ans-text">{currSceneData.answer}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <p className="hint-text">

@@ -126,3 +126,9 @@
     color: #777;
     font-style: italic;
 }
+
+.warning {
+    color: #ef7d00;
+    font-weight: bold;
+    font-size: 1.1rem;
+}

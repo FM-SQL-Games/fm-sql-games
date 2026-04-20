@@ -1,6 +1,10 @@
 import _, { isEqual } from 'lodash';
 import { Parser } from 'node-sql-parser';
-
+/**
+ *  Zvaliduje a upraví SQL dotaz před jeho spuštěním.
+ * @param {string} query - SQL dotaz
+ * @returns {string} - Předzpracovaný SQL dotaz
+ */
 export const preprocessQuery = (query) => {
     try {
         const trimmed = query.trim();
@@ -29,6 +33,14 @@ export const preprocessQuery = (query) => {
     }
 };
 
+/**
+ * Ověří, zda je uživatelský dotaz úspěšný.
+ * @param {string} userQuery - Uživatelský SQL dotaz
+ * @param {string} referenceQuery - Referenční SQL dotaz
+ * @param {Array} userRes - Výsledek uživatelského dotazu
+ * @param {Array} referenceRes - Výsledek referenčního dotazu
+ * @returns {boolean} - Indikátor úspěšnosti dotazu
+ */
 export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, strictRules = []) => {
     let trimmedUser = userQuery.trim();
     let trimmedAnswer = referenceQuery.trim();
