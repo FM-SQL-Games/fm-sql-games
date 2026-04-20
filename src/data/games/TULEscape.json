@@ -24,7 +24,8 @@
             "story": "Je pátek, 23:00. Sedíš na kolejích na Harcově a s hrůzou zjišťuješ, že jsi do STAGu nahrál špatnou verzi své závěrečné práce. Tu, kam jsi omylem vložil 4K video své kočky. O půlnoci se systém zamyká. Otevíráš terminál a připojuješ se do sítě TUL. Než začneš, musíš ověřit, pod jakým ID tě systém vůbec eviduje.",
             "prompt": "Najdi svůj celý profil v tabulce Student. Tvoje uživatelské jméno je 'jan.seqelovy'.",
             "answer": "SELECT * FROM Student WHERE username = 'jan.seqelovy';",
-            "keywords": ["SELECT", "FROM", "WHERE"]
+            "keywords": ["SELECT", "FROM", "WHERE"],
+            "strict_rules": []
         },
         {
             "id": 2,
@@ -32,7 +33,8 @@
             "story": "Výborně, jsi v systému. Teď potřebuješ zmapovat terén. Fyzický přístup na servery nemáš, ale můžeš se pokusit připojit vzdáleně. Musíš najít uzly, které jsou v tuhle noční hodinu stále aktivní.",
             "prompt": "Vypiš všechny informace o serverech v budově 'G', které jsou aktuálně v provozu",
             "answer": "SELECT * FROM Server_Node WHERE building = 'G' AND is_online = 1;",
-            "keywords": ["SELECT", "FROM", "WHERE", "AND"]
+            "keywords": ["SELECT", "FROM", "WHERE", "AND"],
+            "strict_rules": []
         },
         {
             "id": 3,
@@ -40,7 +42,8 @@
             "story": "Znáš aktivní servery, ale jak se jmenuje tvůj soubor? V té panice se ti to úplně vykouřilo z hlavy. Víš jen, že jsi do názvu omylem napsal slovo 'CHYBA'. Musíš ho najít mezi všemi odevzdanými prácemi.",
             "prompt": "Najdi všechno, co víš o odevzdaných pracích, které mají v názvu souboru slovo 'CHYBA'.",
             "answer": "SELECT * FROM Submission WHERE file_name LIKE '%CHYBA%';",
-            "keywords": ["SELECT", "WHERE", "LIKE"]
+            "keywords": ["SELECT", "WHERE", "LIKE"],
+            "strict_rules": []
         },
         {
             "id": 4,
@@ -48,7 +51,8 @@
             "story": "Máš ho! 'Zaverecna_prace_CHYBA_FINAL.pdf'. Teď ale potřebuješ přesně zaměřit svůj cíl. Na jaký fyzický server se tenhle zpackaný soubor vůbec uložil?",
             "prompt": "Identifikuj přesnou charakteristiku chybného souboru, konkrétně zjisti jeho název, jméno serveru a jeho síťovou adresu.",
             "answer": "SELECT S.file_name, N.hostname, N.ip_address FROM Submission S JOIN Server_Node N ON S.server_id = N.server_id WHERE S.file_name LIKE '%CHYBA%';",
-            "keywords": ["SELECT", "JOIN", "ON", "WHERE", "LIKE"]
+            "keywords": ["SELECT", "JOIN", "ON", "WHERE", "LIKE"],
+            "strict_rules": []
         },
         {
             "id": 5,
@@ -56,7 +60,8 @@
             "story": "Zjistil jsi, kde soubor leží. Server je ale chráněný. Než na něj zaútočíš, chceš vědět, jak velký datový provoz na jednotlivých uzlech je. Server s menším počtem prací by mohl být méně monitorovaný adminy.",
             "prompt": "Spočítej, kolik prací celkem je uloženo na jednotlivých serverech. Vypiš ID serveru a celkový počet.",
             "answer": "SELECT server_id, COUNT(*) AS file_count FROM Submission GROUP BY server_id;",
-            "keywords": ["COUNT", "AS", "GROUP BY"]
+            "keywords": ["COUNT", "AS", "GROUP BY"],
+            "strict_rules": []
         },
         {
             "id": 6,
@@ -64,7 +69,8 @@
             "story": "Vypadá to bledě, server je plně vytížený a sledovaný. Budeš k přepisu potřebovat přímo přístupové údaje garanta tvého předmětu. Jenže ty ani nevíš, kdo tě učí!",
             "prompt": "Vypiš název předmětu a jméno a příjmení garanta předmětu pro odevzdanou práci, která má v názvu 'CHYBA'.",
             "answer": "SELECT SUB.subject_name, E.first_name, E.last_name FROM Submission S JOIN Subject SUB ON S.subject_code = SUB.subject_code JOIN Employee E ON SUB.guarantor_id = E.employee_id WHERE S.file_name LIKE '%CHYBA%';",
-            "keywords": ["JOIN", "ON", "WHERE", "LIKE"]
+            "keywords": ["JOIN", "ON", "WHERE", "LIKE"],
+            "strict_rules": []
         },
         {
             "id": 7,
@@ -81,7 +87,8 @@
             "story": "Po chvilce uvažování dojdeš k závěru, že falešný pád disku je příliš riskantní. Zkusíš jinou cestu, hrubou sílu. Administrátoři na TULce občas nedodržují bezpečnostní politiku. Zanalyzuj logy a najdi IP adresu, ze které se někdo marně snažil přihlásit víckrát za sebou.",
             "prompt": "Zjisti pouze IP adresy, ze kterých přišlo v logách více než 5 neúspěšných pokusů o přihlášení.",
             "answer": "SELECT source_ip FROM Access_Log WHERE is_success = 0 GROUP BY source_ip HAVING COUNT(*) > 5;",
-            "keywords": ["WHERE", "GROUP BY", "HAVING", "COUNT"]
+            "keywords": ["WHERE", "GROUP BY", "HAVING", "COUNT"],
+            "strict_rules": []
         },
         {
             "id": 9,
@@ -89,7 +96,8 @@
             "story": "Bingo! Máš podezřelou IP adresu z počítačové laboratoře v přízemí. Kdo se odtud snažil dostat do systému? Zkusíš vypsat uživatelská jména spojená s touto zranitelnou adresou.",
             "prompt": "Jaká unikátní uživatelská jména zkoušela štěstí z IP adres, které mají více než 5 neúspěšných pokusů?",
             "answer": "SELECT DISTINCT username FROM Access_Log WHERE source_ip IN (SELECT source_ip FROM Access_Log WHERE is_success = 0 GROUP BY source_ip HAVING COUNT(*) > 5);",
-            "keywords": ["DISTINCT", "WHERE", "IN", "GROUP BY", "HAVING", "COUNT"]
+            "keywords": ["DISTINCT", "WHERE", "IN", "GROUP BY", "HAVING", "COUNT"],
+            "strict_rules": []
         },
         {
             "id": 10,
@@ -97,7 +105,8 @@
             "story": "Uživatelé odhaleni. Jsou to jen zmatení studenti, kteří zapomněli heslo ke STAGu. Ty hledáš opravdovou zranitelnost. Někdy se lidé omylem hlásí na servery, které jsou už odpojené. Tyto požadavky firewall neblokuje.",
             "prompt": "Vypiš uživatelské jméno a hostname serveru, který se snažil přihlásit na server, který je momentálně offline.",
             "answer": "SELECT L.username, N.hostname FROM Access_Log L JOIN Server_Node N ON L.server_id = N.server_id WHERE N.is_online = 0;",
-            "keywords": ["JOIN", "ON", "WHERE"]
+            "keywords": ["JOIN", "ON", "WHERE"],
+            "strict_rules": []
         },
         {
             "id": 11,
@@ -105,7 +114,8 @@
             "story": "Čas ubíhá, je 23:30. Aby tvůj hack nikdo nespojil s tvým profilem, musíš zfalšovat identitu. K tomu potřebuješ sestavit kompletní slovník všech účtů v univerzitní síti a to studentů i zaměstnanců.",
             "prompt": "Vypiš všechna uživatelská jména Studentů a spoj je s uživatelskými jmény zaměstnanců v jediném sloupci.",
             "answer": "SELECT username FROM Student UNION SELECT username FROM Employee;",
-            "keywords": ["SELECT", "UNION"]
+            "keywords": ["SELECT", "UNION"],
+            "strict_rules": []
         },
         {
             "id": 12,
@@ -113,7 +123,8 @@
             "story": "Který účet ale ukrást? Nejlepší bude zaměstnanec s nejvyšší úrovní přístupu (5), který je ale takzvaný 'mrtvý účet', tudíž ještě se nikdy do systému nepřihlásil, takže logy jsou čisté a nikdo si ničeho nevšimne.",
             "prompt": "Najdi uživatelská jména adminů, kteří mají úroveň přístupu 5 a nefigurují v tabulce Access_Log, tedy se nikdy nepřihlásili.",
             "answer": "SELECT username FROM Employee WHERE clearance_level = 5 EXCEPT SELECT username FROM Access_Log;",
-            "keywords": ["WHERE", "EXCEPT"]
+            "keywords": ["WHERE", "EXCEPT"],
+            "strict_rules": []
         },
         {
             "id": 13,
@@ -121,7 +132,8 @@
             "story": "Získal jsi přístup k administrátorskému účtu. Jsi uvnitř! Než provedeš svůj hlavní tah, chceš v systému vytvořit drobný zmatek na odlákání pozornosti. Pokud smažeš prázdný předmět, systém začne chrlit chybové hlášky.",
             "prompt": "Které předměty, konkrétně kód a jméno předmětu, zatím nemají nahozenou žádnou odevzdanou práci? ",
             "answer": "SELECT SUB.subject_code, SUB.subject_name FROM Subject SUB LEFT JOIN Submission S ON SUB.subject_code = S.subject_code WHERE S.submission_id IS NULL;",
-            "keywords": ["LEFT JOIN", "WHERE", "IS NULL"]
+            "keywords": ["LEFT JOIN", "WHERE", "IS NULL"],
+            "strict_rules": []
         },
         {
             "id": 14,
@@ -129,7 +141,8 @@
             "story": "Je 23:45. Programování I zmizelo ze systému a administrátoři už teď řeší, co se děje. Máš jen pár minut, než si všimnou té anomálie s tvým obřím souborem. Vzpomněl sis, že tvůj zpackaný soubor s kočičím videem je obrovský.",
             "prompt": "Vypiš názvy všech odevzdaných souborů, které jsou větší než absolutní průměrná velikost všech souborů v databázi.",
             "answer": "SELECT file_name FROM Submission WHERE file_size_mb > (SELECT AVG(file_size_mb) FROM Submission);",
-            "keywords": ["WHERE", "AVG"]
+            "keywords": ["WHERE", "AVG"],
+            "strict_rules": []
         },
         {
             "id": 15,
@@ -137,7 +150,8 @@
             "story": "Tvá práce opravdu vyčnívá jako bolavý palec. Budeš ji muset nejen smazat, ale maskovat nahrání nového souboru z rektorské sítě. Musíš zjistit, které servery vůbec přijímají připojení z rektorátu.",
             "prompt": "Vypiš hostname serverů, u kterých existuje alespoň jeden úspěšný log od zaměstnance z oddělení 'Rektorat'.",
             "answer": "SELECT hostname FROM Server_Node N WHERE EXISTS (SELECT 1 FROM Access_Log L JOIN Employee E ON L.username = E.username WHERE L.server_id = N.server_id AND L.is_success = 1 AND E.department = 'Rektorat');",
-            "keywords": ["WHERE", "EXISTS", "JOIN", "AND"]
+            "keywords": ["WHERE", "EXISTS", "JOIN", "AND"],
+            "strict_rules": []
         },
         {
             "id": 16,
@@ -145,7 +159,8 @@
             "story": "Sakra! Přestože ses napojil na stroje rektorátu, jejich firewall tě po chvíli detekoval a odřízl. Rektorské stroje jsou teď pro tebe neprůstřelné. Budeš to muset poslat přes jiný studentský počítač. Zjisti, kdo ze spolužáků odevzdal práci na úplně stejný server, na kterém leží tvůj chybný soubor.",
             "prompt": "Najdi uživatelská jména studentů, kteří nahráli soubor na stejný server jako tvá chybná práce s názvem obsahujícím 'CHYBA'.",
             "answer": "SELECT ST.username FROM Student ST JOIN Submission S ON ST.student_id = S.student_id WHERE S.server_id = (SELECT server_id FROM Submission WHERE file_name LIKE '%CHYBA%');",
-            "keywords": ["JOIN", "WHERE", "LIKE"]
+            "keywords": ["JOIN", "WHERE", "LIKE"],
+            "strict_rules": []
         },
         {
             "id": 17,
@@ -154,7 +169,7 @@
             "prompt": "Najdi úplně první (nejstarší) čas pokusu o přihlášení ze všech záznamů v tabulce Access_Log a pojmenuj ho First_Login.",
             "answer": "SELECT MIN(attempt_time) AS First_Login FROM Access_Log;",
             "keywords": ["MIN", "AS"],
-            "strict_rules":["strict_as"]
+            "strict_rules": ["strict_as"]
         },
         {
             "id": 18,
@@ -162,7 +177,8 @@
             "story": "Je 23:55. STAG se pod náporem zálohovacích skriptů začíná zpomalovat. Tvůj ukradený admin účet má sice vysoká práva, ale systém tě právě vyzval k dodatečnému ověření. Musíš emulovat úroveň prověrky konkrétního člověka a to garanta toho předmětu, pod který spadá tvoje závěrečná práce. Pokud se netrefíš, systém tě okamžitě odpojí.",
             "prompt": "Zjisti úroveň prověrky zaměstnance, který garantuje předmět spojený s tvým chybným souborem.",
             "answer": "SELECT E.clearance_level FROM Submission S JOIN Subject SUB ON S.subject_code = SUB.subject_code JOIN Employee E ON SUB.guarantor_id = E.employee_id WHERE S.file_name LIKE '%CHYBA%';",
-            "keywords": ["JOIN", "ON", "WHERE", "LIKE"]
+            "keywords": ["JOIN", "ON", "WHERE", "LIKE"],
+            "strict_rules": []
         },
         {
             "id": 19,
@@ -170,7 +186,8 @@
             "story": "23:58. Dvě minuty do uzamčení sítě. Potřebuješ si vypsat detailní 'zatykač' na cizí velké soubory, abys pod jeden z nich svou práci schoval, než ji přemístíš.",
             "prompt": "Zobraz jméno a příjmení studenta, název jeho předmětu a velikost souboru, ale jen pro práce, které mají velikost nad 100 MB.",
             "answer": "SELECT ST.first_name, ST.last_name, SUB.subject_name, S.file_size_mb FROM Submission S JOIN Student ST ON S.student_id = ST.student_id JOIN Subject SUB ON S.subject_code = SUB.subject_code WHERE S.file_size_mb > 100;",
-            "keywords": ["JOIN", "ON", "WHERE"]
+            "keywords": ["JOIN", "ON", "WHERE"],
+            "strict_rules": []
         },
         {
             "id": 20,
@@ -178,7 +195,8 @@
             "story": "23:59:30. Prsty létají po klávesnici. Systém odpočítává vteřiny do chvíle, kdy tvé kočičí video navždy zabetonuje v archivech univerzity. Připravil jsi přepisovací skript. Zbývá jediný dotaz. Najdi cíl, ukradni identitu a zachraň si semestr!",
             "prompt": "Vypiš IP adresu serveru, na kterém leží tvoje chybná práce a k výsledku připoj uživatelské jméno 'mrtvého' administrátora. Spoj tyto dvě nezávislé tabulky pomocí CROSS JOIN.",
             "answer": "SELECT N.ip_address, E.username FROM Submission S JOIN Server_Node N ON S.server_id = N.server_id CROSS JOIN Employee E WHERE S.file_name LIKE '%CHYBA%' AND E.clearance_level = 5 AND E.username NOT IN (SELECT username FROM Access_Log);",
-            "keywords": ["JOIN", "CROSS JOIN", "WHERE", "AND", "NOT", "IN"]
+            "keywords": ["JOIN", "CROSS JOIN", "WHERE", "AND", "NOT", "IN"],
+            "strict_rules": []
         }
     ]
 }

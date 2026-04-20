@@ -135,7 +135,17 @@ def validate_and_preprocess(file_path, base_path):
                 img_path = os.path.join(base_path, 'public', 'pageAssets', asset_folder, 'scenes', scene['img'])
                 if not os.path.exists(img_path):
                     print(f"::warning file={file_path}::Obrázek scény '{img_path}' nebyl nalezen.")
-
+            
+            allowed_rules = {"strict_row_order", "strict_column_order", "strict_as"}
+            strict_rules = scene.get('strict_rules', [])
+            
+            if not isinstance(strict_rules, list):
+                errors.append(f"Scéna {scene_id}: Pole 'strict_rules' musí být typu pole (array).")
+            else:
+                for rule in strict_rules:
+                    if rule not in allowed_rules:
+                        print(f"::warning file={file_path}::Scéna {scene_id}: Neznámé pravidlo '{rule}' v 'strict_rules'.")
+            scene['strict_rules'] = strict_rules
         connection.close()
 
     except Exception as e:
@@ -160,8 +170,20 @@ def validate_and_preprocess(file_path, base_path):
             print(f"::error file={file_path}::{err}")
         return False
 
+    json_str = json.dumps(data, indent=4, ensure_ascii=False)
+    
+    for key in ["keywords", "strict_rules"]:
+        pattern = rf'("{key}":\s*)\[(.*?)\]'
+        
+        def replace_array(match):
+            prefix = match.group(1)
+            content = re.sub(r'\s*\n\s*', ' ', match.group(2)).strip()
+            return f"{prefix}[{content}]"
+            
+        json_str = re.sub(pattern, replace_array, json_str, flags=re.DOTALL)
+        
     with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+        f.write(json_str + '\n') 
 
     print(f"--- {file_path} byl úspěšně zpracován ---\n")
     return True
