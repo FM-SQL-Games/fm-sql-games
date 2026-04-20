@@ -279,12 +279,13 @@ export default function GamePage({ gameData }) {
                     stack: refError.stack,
                 });
             }
+            
 
             if (forcePass) {
                 isCorrect = true;
                 console.warn('Uživatel prošel přes Force Pass (chyba v zadání).');
             } else {
-                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes);
+                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules);
             }
 
             if (isCorrect) {
