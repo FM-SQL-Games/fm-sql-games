@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { preprocessQuery, isSuccessful } from './sqlValidator';
 import _ from 'lodash';
+const createRes = (columns, values) => [{ columns, values }];
 
 describe('preprocessQuery() - Validace a preprocessing', () => {
     // --- 1. Úspěšné scénáře ---
@@ -149,388 +150,256 @@ describe('preprocessQuery() - Validace a preprocessing', () => {
     });
 });
 
-describe('isSuccessful() - Verze na FEATURE (Flexibilní pravidla)', () => {
-    // --- Mock Data ---
-    const refQuery = "SELECT user_id, username, role, score FROM Accounts;";
-    const refRes = [{
-        columns: ['user_id', 'username', 'role', 'score'],
-        values: [
-            [101, 'admin_alik', 'admin', 100.5],
-            [102, 'guest_micka', 'guest', 0.0],
-            [103, 'user_azor', 'user', 42.1]
-        ]
-    }];
+describe('SQL Validator Engine - isSuccessful', () => {
 
-    // Dotaz, který vrací stejná data, ale má jiný text 
-    const diffQuery = "SELECT user_id, username, role, score FROM Accounts WHERE 1=1;";
-
-    // --- 1. Základní flexibilita ---
-    describe('Základní flexibilita (Bez pravidel)', () => {
-        it('ÚSPĚCH: Uzná dotaz se stejným textem', () => {
-            expect(isSuccessful(refQuery, refQuery, refRes, refRes)).toBe(true);
-        });
-
-        it('ÚSPĚCH: Nyní uzná správná data i v jiném pořadí řádků (Vyřešeno!)', () => {
-            const userRes = [{
-                columns: ['user_id', 'username', 'role', 'score'],
-                values: [
-                    [103, 'user_azor', 'user', 42.1],    
-                    [101, 'admin_alik', 'admin', 100.5], 
-                    [102, 'guest_micka', 'guest', 0.0]  
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(true);
-        });
-
-        it('SELŽE: Pokud jsou data skutečně jiná (např. jiná hodnota score)', () => {
-            const userRes = [{
-                columns: ['user_id', 'username', 'role', 'score'],
-                values: [
-                    [101, 'admin_alik', 'admin', 100.5],
-                    [102, 'guest_micka', 'guest', 0.0],
-                    [103, 'user_azor', 'user', 99.9] 
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(false);
-        });
-    });
-
-    // --- 2. Pravidlo: strict_row_order ---
-    describe('Pravidlo: strict_row_order', () => {
-        it('SELŽE: Pokud jsou řádky prohozené a pravidlo je AKTIVNÍ', () => {
-            const userRes = [{
-                columns: ['user_id', 'username', 'role', 'score'],
-                values: [
-                    [102, 'guest_micka', 'guest', 0.0],
-                    [101, 'admin_alik', 'admin', 100.5],
-                    [103, 'user_azor', 'user', 42.1]
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_row_order'])).toBe(false);
-        });
-
-        it('ÚSPĚCH: Pokud je pořadí přesné a pravidlo je AKTIVNÍ', () => {
-            expect(isSuccessful(diffQuery, refQuery, refRes, refRes, ['strict_row_order'])).toBe(true);
-        });
-    });
-
-    // --- 3. Pravidlo: strict_as ---
-    describe('Pravidlo: strict_as (Aliasy a pořadí sloupců)', () => {
-        it('ÚSPĚCH: Uzná prohozené sloupce, pokud hráč použil správné názvy (aliasy)', () => {
-            const userRes = [{
-                columns: ['role', 'score', 'user_id', 'username'], 
-                values: [
-                    ['admin', 100.5, 101, 'admin_alik'],
-                    ['guest', 0.0, 102, 'guest_micka'],
-                    ['user', 42.1, 103, 'user_azor']
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as'])).toBe(true);
-        });
-
-        it('SELŽE: Pokud hráč nepoužil správné názvy a strict_as je aktivní', () => {
-            const userRes = [{
-                columns: ['role', 'body', 'user_id', 'username'], 
-                values: [
-                    ['admin', 100.5, 101, 'admin_alik'],
-                    ['guest', 0.0, 102, 'guest_micka'],
-                    ['user', 42.1, 103, 'user_azor']
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as'])).toBe(false);
-        });
-    });
-
-    // --- 4. Kombinace pravidel ---
-    describe('Kombinace pravidel a specifické situace', () => {
-        it('SELŽE: strict_as + strict_column_order (Sloupce prohozené, i když názvy sedí)', () => {
-            const userRes = [{
-                columns: ['username', 'user_id', 'role', 'score'],
-                values: [
-                    ['admin_alik', 101, 'admin', 100.5],
-                    ['guest_micka', 102, 'guest', 0.0],
-                    ['user_azor', 103, 'user', 42.1]
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as', 'strict_column_order'])).toBe(false);
-        });
-
-        it('SELŽE: Prohozené sloupce BEZ pravidla strict_as (Vrací se k porovnání surových matic)', () => {
-            const userRes = [{
-                columns: ['username', 'user_id', 'role', 'score'],
-                values: [
-                    ['admin_alik', 101, 'admin', 100.5],
-                    ['guest_micka', 102, 'guest', 0.0],
-                    ['user_azor', 103, 'user', 42.1]
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(false);
-        });
-
-        it('ÚSPĚCH: Všechna 3 pravidla aktivní a data jsou naprosto identická', () => {
-            const rules = ['strict_as', 'strict_column_order', 'strict_row_order'];
-            expect(isSuccessful(diffQuery, refQuery, refRes, refRes, rules)).toBe(true);
-        });
-    });
-
-    // --- 5. Strukturální a chybové stavy ---
-    describe('Strukturální neshody a prázdné vstupy', () => {
-        it('SELŽE: Pokud hráč vrátí jiný počet sloupců', () => {
-            const userRes = [{
-                columns: ['user_id', 'username', 'role'],
-                values: [
-                    [101, 'admin_alik', 'admin'],
-                    [102, 'guest_micka', 'guest'],
-                    [103, 'user_azor', 'user']
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(false);
-        });
-
-        it('SELŽE: Pokud hráč vrátí jiný počet řádků', () => {
-            const userRes = [{
-                columns: ['user_id', 'username', 'role', 'score'],
-                values: [
-                    [101, 'admin_alik', 'admin', 100.5],
-                    [102, 'guest_micka', 'guest', 0.0] 
-                ]
-            }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(false);
-describe('isSuccessful() - Verze na MAIN (Striktní porovnávání)', () => {
-    // --- Mock Data ---
-    const refQuery = 'SELECT user_id, username, role, score FROM Accounts;';
-    const refRes = [
-        {
-            columns: ['user_id', 'username', 'role', 'score'],
-            values: [
-                [101, 'admin_alik', 'admin', 100.5],
-                [102, 'guest_micka', 'guest', 0.0],
-                [103, 'user_azor', 'user', 42.1],
-            ],
-        },
+    const refQuery = "SELECT id, name, score FROM players;";
+    const diffQuery = "SELECT id, name, score FROM players WHERE 1=1;";
+    const refCols = ['id', 'name', 'score'];
+    const refVals = [
+        [1, 'Alice', 100],
+        [2, 'Bob', 50],
+        [3, 'Charlie', 10]
     ];
+    const refRes = createRes(refCols, refVals);
 
-    const diffQuery = 'SELECT user_id, username, role, score FROM Accounts WHERE 1=1;';
 
-    describe('Základní shoda', () => {
-        it('ÚSPĚCH: Uzná dotaz se stejným textem', () => {
+    describe('1. Fast-Pass a Základní shoda', () => {
+        it('ÚSPĚCH: Zcela identický text dotazu (včetně mezer) projde okamžitě', () => {
             expect(isSuccessful(refQuery, refQuery, refRes, refRes)).toBe(true);
         });
 
-        it('ÚSPĚCH: Uzná jiný dotaz, pokud vrátí naprosto identická data ve stejném pořadí', () => {
+        it('ÚSPĚCH: Identická data, jiný text dotazu', () => {
             expect(isSuccessful(diffQuery, refQuery, refRes, refRes)).toBe(true);
         });
     });
 
-    describe('Limitace verze MAIN (Očekávaná selhání)', () => {
-        it('SELŽE: Pokud jsou data v jiném pořadí řádků (Limitace MAIN větve)', () => {
-            const userRes = [
-                {
-                    columns: ['user_id', 'username', 'role', 'score'],
-                    values: [
-                        [102, 'guest_micka', 'guest', 0.0],
-                        [101, 'admin_alik', 'admin', 100.5],
-                        [103, 'user_azor', 'user', 42.1],
-                    ],
-                },
-            ];
+
+    describe('2. Absolutní volnost (Žádná pravidla)', () => {
+        it('ÚSPĚCH: Zvládne prohozené řádky', () => {
+            const userRes = createRes(refCols, [
+                [3, 'Charlie', 10],
+                [1, 'Alice', 100],
+                [2, 'Bob', 50]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(true);
+        });
+
+        it('ÚSPĚCH: Zvládne prohozené sloupce (spoléhá na data intersect)', () => {
+            const userRes = createRes(['score', 'id', 'name'], [
+                [100, 1, 'Alice'],
+                [50, 2, 'Bob'],
+                [10, 3, 'Charlie']
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(true);
+        });
+
+        it('ÚSPĚCH: Zvládne prohozené sloupce, prohozené řádky i jiné aliasy najednou', () => {
+            const userRes = createRes(['body', 'jmeno', 'identifikator'], [
+                [50, 'Bob', 2],
+                [10, 'Charlie', 3],
+                [100, 'Alice', 1]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, [])).toBe(true);
+        });
+    });
+
+
+    describe('3. Pravidlo: strict_row_order', () => {
+        it('SELŽE: Řádky jsou v jiném pořadí', () => {
+            const userRes = createRes(refCols, [
+                [2, 'Bob', 50], [1, 'Alice', 100], [3, 'Charlie', 10]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_row_order'])).toBe(false);
+        });
+
+        it('ÚSPĚCH: Řádky jsou ve správném pořadí, ale sloupce prohozené', () => {
+            const userRes = createRes(['name', 'id', 'score'], [
+                ['Alice', 1, 100], ['Bob', 2, 50], ['Charlie', 3, 10]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_row_order'])).toBe(true);
+        });
+    });
+
+
+    describe('4. Pravidlo: strict_column_order', () => {
+        it('SELŽE: Sloupce jsou v jiném pořadí', () => {
+            const userRes = createRes(['name', 'id', 'score'], [
+                ['Alice', 1, 100], ['Bob', 2, 50], ['Charlie', 3, 10]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_column_order'])).toBe(false);
+        });
+
+        it('ÚSPĚCH: Sloupce jsou ve správném pořadí, ale mají jiné názvy (aliasy)', () => {
+            const userRes = createRes(['ident', 'jmeno', 'body'], refVals);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_column_order'])).toBe(true);
+        });
+    });
+
+
+    describe('5. Pravidlo: strict_as', () => {
+        it('SELŽE: Názvy sloupců (aliasy) se neshodují', () => {
+            const userRes = createRes(['id', 'jmeno', 'score'], refVals);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as'])).toBe(false);
+        });
+
+        it('ÚSPĚCH: Názvy sloupců sedí, ale jsou v jiném pořadí', () => {
+            const userRes = createRes(['score', 'id', 'name'], [
+                [100, 1, 'Alice'], [50, 2, 'Bob'], [10, 3, 'Charlie']
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as'])).toBe(true);
+        });
+    });
+
+
+    describe('6. Kombinace pravidel', () => {
+        it('SELŽE: strict_as + strict_column_order (Správná jména, ale špatné pořadí)', () => {
+            const userRes = createRes(['name', 'id', 'score'], [
+                ['Alice', 1, 100], ['Bob', 2, 50], ['Charlie', 3, 10]
+            ]);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as', 'strict_column_order'])).toBe(false);
+        });
+
+        it('SELŽE: strict_as + strict_column_order (Správné pořadí, ale špatná jména)', () => {
+            const userRes = createRes(['id', 'nick', 'score'], refVals);
+            expect(isSuccessful(diffQuery, refQuery, userRes, refRes, ['strict_as', 'strict_column_order'])).toBe(false);
+        });
+
+        it('ÚSPĚCH: Všechna 3 pravidla splněna', () => {
+            expect(isSuccessful(diffQuery, refQuery, refRes, refRes, ['strict_as', 'strict_column_order', 'strict_row_order'])).toBe(true);
+        });
+    });
+
+
+    describe('7. Strukturální chyby a prázdná data', () => {
+        it('ÚSPĚCH: Obě tabulky jsou prázdné', () => {
+            expect(isSuccessful(diffQuery, refQuery, createRes([], []), createRes([], []))).toBe(true);
+        });
+
+        it('SELŽE: Jedna tabulka je prázdná a druhá ne', () => {
+            expect(isSuccessful(diffQuery, refQuery, createRes([], []), refRes)).toBe(false);
+        });
+
+        it('SELŽE: Jiný počet sloupců', () => {
+            const userRes = createRes(['id', 'name'], [[1, 'Alice'], [2, 'Bob'], [3, 'Charlie']]);
             expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
         });
 
-        it('SELŽE: Pokud jsou sloupce v jiném pořadí (Limitace MAIN větve)', () => {
-            const userRes = [
-                {
-                    columns: ['username', 'user_id', 'role', 'score'],
-                    values: [
-                        ['admin_alik', 101, 'admin', 100.5],
-                        ['guest_micka', 102, 'guest', 0.0],
-                        ['user_azor', 103, 'user', 42.1],
-                    ],
-                },
-            ];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud data obsahují i drobnou chybu (např. jiná hodnota score)', () => {
-            const userRes = [
-                {
-                    columns: ['user_id', 'username', 'role', 'score'],
-                    values: [
-                        [101, 'admin_alik', 'admin', 100.5],
-                        [102, 'guest_micka', 'guest', 0.0],
-                        [103, 'user_azor', 'user', 99.9],
-                    ],
-                },
-            ];
+        it('SELŽE: Jiný počet řádků', () => {
+            const userRes = createRes(refCols, [[1, 'Alice', 100], [2, 'Bob', 50]]);
             expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
         });
     });
 
-    describe('Strukturální neshody a prázdné vstupy', () => {
-        it('SELŽE: Pokud hráč vrátí jiný počet sloupců', () => {
-            const userRes = [
-                {
-                    columns: ['user_id', 'username', 'role'],
-                    values: [
-                        [101, 'admin_alik', 'admin'],
-                        [102, 'guest_micka', 'guest'],
-                        [103, 'user_azor', 'user'],
-                    ],
-                },
-            ];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
-        });
 
-        it('SELŽE: Pokud hráč vrátí jiný počet řádků', () => {
-            const userRes = [
-                {
-                    columns: ['user_id', 'username', 'role', 'score'],
-                    values: [
-                        [101, 'admin_alik', 'admin', 100.5],
-                        [102, 'guest_micka', 'guest', 0.0],
-                    ],
-                },
-            ];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud userRes je prázdné pole', () => {
-            expect(isSuccessful(diffQuery, refQuery, [], refRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud dotaz nevrátil žádné řádky (prázdné values)', () => {
-            const userRes = [{ columns: ['user_id', 'username'], values: [] }];
-            expect(isSuccessful(diffQuery, refQuery, userRes, refRes)).toBe(false);
-        });
-    });
-
-    // --- 6. Test na dalších datech ---
-    describe('Robustnost na další datech', () => {
-        const robustRefQuery = "SELECT * FROM Students_Complex;";
-        const robustDiffQuery = "SELECT * FROM Students_Complex WHERE id > 0;";
-
-        const robustRes = [{
-            columns: ['id', 'name', 'grade', 'is_active', 'note'],
-            values: [
-                [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                [3, 'Eva Nová', 1.0, 1, ''],
-                [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce']
-            ]
-        }];
-
-        it('ÚSPĚCH: Zvládne porovnat data s diakritikou, uvozovkami, NULL a speciálními znaky', () => {
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, robustRes, robustRes)).toBe(true);
-        });
-
-        it('SELŽE: Pokud je v datech rozdíl mezi NULL a prázdným řetězcem', () => {
-            const userRes = [{
-                columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                values: [
-                    [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                    [2, 'Petr "Rychlý" O.', 2.0, 0, ''], // NULL nahrazen prázdným řetězcem
-                    [3, 'Eva Nová', 1.0, 1, ''],
-                    [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                    [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce']
-                ]
-            }];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud je v datech rozdíl v hodnotě (např. grade 1.0 vs 1.2)', () => {
-            const userRes = [{
-                columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                values: [
-                    [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                    [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                    [3, 'Eva Nová', 1.2, 1, ''], // Zde je chyba (1.0 místo 1.2)
-                    [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                    [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce']
-                ]
-            }];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud je v datech rozdíl v pořadí řádků a strict_row_order je aktivní', () => {
-            const userRes = [{
-                columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                values: [
-                    [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                    [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'], // Prohozené řádky
-                    [3, 'Eva Nová', 1.0, 1, ''],
-                    [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                    [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce']
-                ]
-            }];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes, ['strict_row_order'])).toBe(false);
-        });
-
-        it('SELŽE: Pokud je v datech rozdíl v hodnotě a strict_as je aktivní', () => {
-            const userRes = [{
-                columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                values: [
-                    [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                    [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                    [3, 'Eva Nová', 1.2, 1, ''], // Zde je chyba (1.0 místo 1.2)
-                    [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                    [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce']
-                ]
-            }];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes)).toBe(false);
-        });
-    });
-});
-    describe('Robustnost datových typů (Ověření na MAIN)', () => {
-        const robustRefQuery = 'SELECT * FROM Students_Complex;';
-        const robustDiffQuery = 'SELECT * FROM Students_Complex WHERE id > 0;';
-        const robustRes = [
-            {
-                columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                values: [
-                    [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                    [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                    [3, 'Eva Nová', 1.0, 1, ''],
-                    [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                    [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce'],
-                ],
-            },
+    describe('8. Robustnost a komplexní datové typy', () => {
+        const complexCols = ['id', 'is_active', 'note', 'ratio'];
+        const complexVals = [
+            [1, 1, 'Nový\nřádek', 1.5],
+            [2, 0, null, 2.0],
+            [3, 1, '', 0.0]
         ];
+        const complexRes = createRes(complexCols, complexVals);
 
-        it('ÚSPĚCH: Zvládne porovnat data s diakritikou, uvozovkami, NULL a speciálními znaky', () => {
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, robustRes, robustRes)).toBe(true);
+        it('ÚSPĚCH: Porovná správně NULL, prázdné stringy, čísla s plovoucí čárkou a odřádkování', () => {
+            const userRes = createRes(['note', 'id', 'ratio', 'is_active'], [
+                [null, 2, 2.0, 0],
+                ['', 3, 0.0, 1],
+                ['Nový\nřádek', 1, 1.5, 1]
+            ]);
+            expect(isSuccessful(diffQuery, "SELECT * FROM t;", userRes, complexRes, [])).toBe(true);
         });
 
-        it('SELŽE: Pokud je v datech rozdíl mezi NULL a prázdným řetězcem', () => {
-            const userRes = [
-                {
-                    columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                    values: [
-                        [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                        [2, 'Petr "Rychlý" O.', 2.0, 0, ''],
-                        [3, 'Eva Nová', 1.0, 1, ''],
-                        [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                        [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce'],
-                    ],
-                },
-            ];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes)).toBe(false);
-        });
-
-        it('SELŽE: Pokud je v datech rozdíl v hodnotě (např. grade 1.0 vs 1.2)', () => {
-            const userRes = [
-                {
-                    columns: ['id', 'name', 'grade', 'is_active', 'note'],
-                    values: [
-                        [1, 'Jan Žluťoučký', 1.5, 1, 'Pravidelná docházka'],
-                        [2, 'Petr "Rychlý" O.', 2.0, 0, null],
-                        [3, 'Eva Nová', 1.2, 1, ''],
-                        [4, 'Marek Středník;', 3.5, 1, 'Zmatek; ve; střednících'],
-                        [5, 'Lucie\nNováková', 1.2, 0, 'Nový\nřádek v buňce'],
-                    ],
-                },
-            ];
-            expect(isSuccessful(robustDiffQuery, robustRefQuery, userRes, robustRes)).toBe(false);
+        it('SELŽE: Rozliší NULL od prázdného řetězce ("")', () => {
+            const userRes = createRes(complexCols, [
+                [1, 1, 'Nový\nřádek', 1.5],
+                [2, 0, '', 2.0], 
+                [3, 1, '', 0.0]
+            ]);
+            expect(isSuccessful(diffQuery, "SELECT * FROM t;", userRes, complexRes, [])).toBe(false);
         });
     });
+
+
+    describe('9. Zátěžový test Backtrackingu (Duplicitní sloupce)', () => {
+        it('ÚSPĚCH: Backtracking se nezasekne a spáruje identické sloupce', () => {
+            const dupRefRes = createRes(['a', 'b', 'c'], [
+                [1, 1, 'X'],
+                [2, 2, 'Y'],
+                [3, 3, 'Z']
+            ]);
+            const userRes = createRes(['b', 'c', 'a'], [
+                [2, 'Y', 2],
+                [1, 'X', 1],
+                [3, 'Z', 3]
+            ]);
+            expect(isSuccessful(diffQuery, "SELECT * FROM t;", userRes, dupRefRes, [])).toBe(true);
+        });
+    });
+
+    describe('10. Datové typy a Case Sensitivity (Velká/Malá písmena)', () => {
+        const refCols = ['id', 'jmeno'];
+        const refVals = [[1, 'Alice'], [2, 'Bob']];
+        const refRes = createRes(refCols, refVals);
+
+        it('SELŽE: Rozlišuje velká a malá písmena v datech (Data Case Sensitivity)', () => {
+            const userRes = createRes(['id', 'jmeno'], [
+                [1, 'ALICE'],
+                [2, 'bob']
+            ]);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, [])).toBe(false);
+        });
+
+        it('SELŽE: Rozlišuje čísla a texty (1 vs "1")', () => {
+            const userRes = createRes(['id', 'jmeno'], [
+                ['1', 'Alice'],
+                ['2', 'Bob']
+            ]);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, [])).toBe(false);
+        });
+
+        it('SELŽE: Pravidlo strict_as je citlivé na velikost písmen u sloupců', () => {
+            const userRes = createRes(['ID', 'JMENO'], refVals);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, ['strict_as'])).toBe(false);
+        });
+
+        it('ÚSPĚCH: Bez strict_as nezáleží na velikosti písmen u sloupců (namapuje se přes data)', () => {
+            const userRes = createRes(['ID', 'JMENO'], refVals);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, [])).toBe(true);
+        });
+    });
+
+    describe('11. Speciální znaky a agregační funkce (COUNT, SUM)', () => {
+        const refCols = ['oddeleni', 'COUNT(*)'];
+        const refVals = [['IT', 5], ['HR', 2]];
+        const refRes = createRes(refCols, refVals);
+
+        it('ÚSPĚCH: Zvládne spárovat sloupce s agregací, i když si hráč udělal vlastní alias', () => {
+            const userRes = createRes(['pocet_lidi', 'oddeleni'], [
+                [2, 'HR'],
+                [5, 'IT']
+            ]);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, [])).toBe(true);
+        });
+
+        it('SELŽE: Pokud hráč použije vlastní alias, ale ty vyžaduješ strict_as', () => {
+            const userRes = createRes(['oddeleni', 'pocet_lidi'], refVals);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, ['strict_as'])).toBe(false);
+        });
+    });
+
+    describe('12. Extrémní formátování mezer (Whitespace)', () => {
+        it('ÚSPĚCH: Ignoruje zbytečné středníky a mezery navíc v čistém SQL', () => {
+            const uglyUserQuery = "   SELECT * FROM test  ;  ;   ";
+            const cleanRefQuery = "SELECT * FROM test;";
+            expect(isSuccessful(uglyUserQuery, cleanRefQuery, null, null, [])).toBe(true);
+        });
+
+        it('SELŽE: Uznává mezery UVNITŘ dat jako rozdíl', () => {
+            const refRes = createRes(['jmeno'], [['Jan Novák']]);
+            const userRes = createRes(['jmeno'], [['Jan  Novák']]);
+            expect(isSuccessful('Q1', 'Q2', userRes, refRes, [])).toBe(false);
+        });
+    });
+
+
 });

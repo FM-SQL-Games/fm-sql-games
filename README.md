@@ -82,7 +82,17 @@ Každý objekt v tomto poli představuje jednu herní obrazovku s úkolem.
 | `answer` |  **ANO** | - | Referenční SQL dotaz pro ověření správnosti. |
 | `id` | Ne | index + 1 | Pořadové číslo scény (automaticky doplňováno). |
 | `img` | Ne | `id.jpg` |  Název obrázku scény ve složce `assetFolder/scenes/`. |
-| `keywords` | Ne | Auto | Pole SQL klíčových slov pro nápovědu (generováno z answer). |
+| `keywords` | Ne | Auto | Pole SQL klíčových slov pro nápovědu (generováno z answer).
+| `strict_rules`| Ne | `[]` | Pole pravidel pro přísnější vyhodnocení dotazu (viz níže). | 
+
+####  Nastavení přísnosti vyhodnocení (Striktní pravidla)
+Ve výchozím stavu (prázdné pole `[]`) je vyhodnocovací engine **velmi benevolentní**. Pokud se data z uživatelského dotazu shodují s daty v autorském řešení, engine dotaz uzná, i když hráč přehodil pořadí sloupců, řádků nebo si sloupce jinak pojmenoval.
+
+Pokud však chcete otestovat specifické znalosti, můžete chování enginu pro danou scénu zpřísnit přidáním pole `"strict_rules"` do konfigurace scény:
+
+* `"strict_row_order"` – Zapne kontrolu přesného pořadí řádků. Pokud uživatel nepoužije správný `ORDER BY`, odpověď nebude uznána.
+* `"strict_column_order"` – Zapne kontrolu přesného pořadí sloupců. Uživatel musí v příkazu `SELECT` vypsat sloupce přesně v tom pořadí, jaké je v referenčním řešení.
+* `"strict_as"` – Zapne kontrolu názvů sloupců. Hráč musí dodržet pojmenování všech sloupců (aliasy). Vhodné pro vynucení znalosti klauzule `AS`
 
 ##  Instalace a spuštění (Local Setup)
 
