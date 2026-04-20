@@ -1,4 +1,4 @@
-import _, { isEqual } from 'lodash';
+import _ from 'lodash';
 import { Parser } from 'node-sql-parser';
 /**
  * Zvaliduje a upraví SQL dotaz před jeho spuštěním.
