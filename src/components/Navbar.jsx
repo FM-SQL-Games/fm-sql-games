@@ -19,6 +19,13 @@ export default function Navbar() {
                 >
                     Žebříček
                 </Link>
+                <a
+                    href="https://forms.gle/M4TnYB5ZzeJPF7zo7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Dej nám feedback!
+                </a>
             </div>
         </nav>
     );
