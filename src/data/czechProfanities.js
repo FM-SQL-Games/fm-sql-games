@@ -1,0 +1,3 @@
+export const czechProfanities = [
+    "kurv", "hajzl", "curak", "curo", "curac", "kokot", "mrd", "jeb", "zmrd","pica", "pico", "picu", "pici", "picov", "picus","kunda", "kundo", "kundy", "kunde", "kundi","srat", "srac", "posran", "zasran", "vysran", "hovn", "hovad", "prdel","devk", "devec", "slapk", "behn", "fuchtl","debil", "idiot", "kreten", "blbec", "blbost", "magor", "posuk", "hlupak", "tupec", "sulin", "dement", "retard","buzik", "buzn", "buzerant", "teplous", "uchyl", "pedofil","negr", "cikan", "nacek", "hitler","chcipn", "zabse", "zdechn", "svin", "krav"
+];

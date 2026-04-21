@@ -116,6 +116,24 @@
     transform: none !important;
 }
 
+.input-error {
+    border: 2px solid #ef4444 !important;
+    background-color: #fef2f2;
+}
+
+.error-message {
+    color: #ef4444;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* =========================================
     2. SQLCRAFT
    ========================================= */
@@ -275,3 +293,4 @@
 .tul-theme .player-input-section input::placeholder {
     color: rgba(51, 255, 51, 0.3);
 }
+
