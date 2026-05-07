@@ -340,6 +340,16 @@
     transition: background-color 0.3s ease;
 }
 
+.warning-box {
+    background: #fff8e1;
+    color: #7a5800;
+    padding: 12px 15px;
+    border-left: 4px solid #f9a825;
+    margin-bottom: 12px;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.95rem;
+}
+
 /* =========================================
     2. SQLCRAFT
    ========================================= */
