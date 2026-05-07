@@ -34,6 +34,11 @@ export const preprocessQuery = (query) => {
     }
 };
 
+const setWarning = (msg, callback) => {
+    if (callback) callback(msg);
+    return false;
+};
+
 /**
  * Ověří, zda je uživatelský dotaz úspěšný.
  * @param {string} userQuery - Uživatelský SQL dotaz
@@ -43,7 +48,7 @@ export const preprocessQuery = (query) => {
  * @param {Array<string>} [strictRules=[]] - Pole aplikovaných striktních pravidel
  * @returns {boolean} - Indikátor úspěšnosti dotazu
  */
-export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, strictRules = []) => {
+export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, strictRules = [], onWarning = null) => {
     let trimmedUser = userQuery.trim();
     let trimmedAnswer = referenceQuery.trim();
 
@@ -69,26 +74,45 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
     const isUserEmpty = !userRes || userRes.length === 0 || !userRes[0].values || userRes[0].values.length === 0;
     const isRefEmpty = !referenceRes || referenceRes.length === 0 || !referenceRes[0].values || referenceRes[0].values.length === 0;
     if (isUserEmpty && isRefEmpty) return true; 
-    if (isUserEmpty !== isRefEmpty) return false;
+    if (isUserEmpty !== isRefEmpty) return setWarning('Dotaz nevrátil žádná data. Zkontroluj podmínky ve WHERE nebo název tabulky.', onWarning);
 
     const uTab = userRes[0];
     const rTab = referenceRes[0];
 
     //Porovnání počtu sloupců
     if (uTab.columns.length !== rTab.columns.length) {
-        return false;
+        return setWarning(
+            uTab.columns.length < rTab.columns.length
+                ? 'Výsledek má méně sloupců. Vybíráš správné sloupce za SELECT?'
+                : 'Výsledek má příliš mnoho sloupců. Zkontroluj SELECT.',
+            onWarning
+        );
     }
 
     //Porovnání počtu řádků
     if (uTab.values.length !== rTab.values.length) {
-        return false;
+        return setWarning(
+            uTab.values.length < rTab.values.length
+                ? 'Výsledek má méně řádků. Filtrujete příliš přísně?'
+                : 'Výsledek má příliš mnoho řádků. Zkus zpřesnit podmínky nebo typ JOINu.',
+            onWarning
+        );
     }
 
    const colMap = findColMap(uTab, rTab, rules);
 
-   if(!colMap) return false;
+   if(!colMap) return setWarning('Sloupce se nepodařilo namapovat. Zkontroluj vybrané hodnoty.', onWarning);
 
-   return compareData(uTab.values, rTab.values, colMap, rules.strictRowOrder)
+   const dataMatch =  compareData(uTab.values, rTab.values, colMap, rules.strictRowOrder)
+
+   if (!dataMatch) return setWarning(
+        rules.strictRowOrder
+            ? 'Data sedí, ale pořadí řádků nesedí - zkontroluj ORDER BY.'
+            : 'Počet řádků i sloupců sedí, ale hodnoty se neshodují.',
+        onWarning
+    );
+
+    return true;
 };
 
 /**
@@ -142,54 +166,28 @@ function mapByName(userCols, referenceCols){
 }
 
 /**
- * Pokusí se spárovat sloupce nezávisle na názvu, čistě na základě shody dat (s využitím backtrackingu).
+ * Pokusí se spárovat sloupce nezávisle na názvu, čistě na základě shody dat.
  * @param {Array<Array<any>>} userValues - Hodnoty z uživatelské tabulky
  * @param {Array<Array<any>>} refValues - Hodnoty z referenční tabulky
  * @param {number} numCols - Počet sloupců k namapování
  * @returns {Array<number>|null} - Správná mapa indexů sloupců, nebo null, pokud neexistuje platná permutace
  */
-function mapByDataIntersect(userValues, refValues, numCols){
-    let iterations = 0;
-    const maxIterations = 5000;
-
-    //Rozdělení a seřazní sloupců
+function mapByDataIntersect(userValues, refValues, numCols) {
     const refColData = Array.from({length: numCols}, (_, i) => sortCols(refValues, i));
     const userColData = Array.from({length: numCols}, (_, i) => sortCols(userValues, i));
 
-    const candidates = [];
-    for(let i = 0; i < numCols; i++){
-        const valid = [];
-        for(let j = 0; j < numCols; j++){
-            if(_.isEqual(refColData[i], userColData[j])){
-                valid.push(j);
-            }
-        }
-        if(valid.length === 0 ) return null;
-        candidates.push(valid);
+    const map = [];
+    const usedCols = new Set();
+
+    for (let i = 0; i < numCols; i++) {
+        const match = userColData.findIndex((col, j) =>
+            !usedCols.has(j) && _.isEqual(refColData[i], col)
+        );
+        if (match === -1) return null;
+        usedCols.add(match);
+        map.push(match);
     }
-
-    let validMap = null;
-
-    function backtrack(colIndex, currMap, usedCols){
-        if (iterations++ > maxIterations) return;
-        if(validMap) return;
-        if(colIndex === numCols){
-            validMap = [...currMap];
-            return;
-        }
-        for(const userColIndex of candidates[colIndex]){
-            if(!usedCols.has(userColIndex)){
-                usedCols.add(userColIndex);
-                currMap.push(userColIndex);
-                backtrack(colIndex+1, currMap,usedCols);
-                currMap.pop();
-                usedCols.delete(userColIndex);
-            }
-        }
-    }
-    backtrack(0,[], new Set());
-    return validMap;
-
+    return map;
 }
 
 /**

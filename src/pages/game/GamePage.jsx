@@ -54,6 +54,7 @@ export default function GamePage({ gameData }) {
     const [showLoadDialog, setShowLoadDialog] = useState(false);
     const [isFound, setIsFound] = useState(false);
     const [showAns, setShowAns] = useState(false);
+    const [warning, setWarning] = useState(null);
 
     /**
      * Uloží aktuální stav hry do LocalStorage pro pozdější načtení.
@@ -254,7 +255,7 @@ export default function GamePage({ gameData }) {
         setActiveOverlay('table');
         setError(null);
         setResult(null);
-
+        setWarning(null);
         let currentError = null;
         let isCorrect = false;
         let forcePass = false;
@@ -285,7 +286,7 @@ export default function GamePage({ gameData }) {
                 isCorrect = true;
                 console.warn('Uživatel prošel přes Force Pass (chyba v zadání).');
             } else {
-                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules);
+                isCorrect = isSuccessful(cleanQuery, currSceneData.answer, res, referenceRes, currSceneData.strict_rules, (msg) => setWarning(msg) );
             }
 
             if (isCorrect) {
@@ -436,6 +437,9 @@ export default function GamePage({ gameData }) {
                     {activeOverlay === 'table' && (
                         <div className="content-box">
                             <h3>VÝSLEDEK DOTAZU</h3>
+
+                            {warning && <div className="warning-box">⚠️ {warning}</div>}
+
                             {error ? (
                                 <div className="error-box">{error}</div>
                             ) : result ? (
