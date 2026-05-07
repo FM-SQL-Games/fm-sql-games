@@ -107,7 +107,7 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
 
    if (!dataMatch) return setWarning(
         rules.strictRowOrder
-            ? 'Data sedí, ale pořadí řádků nesedí — zkontroluj ORDER BY.'
+            ? 'Data sedí, ale pořadí řádků nesedí - zkontroluj ORDER BY.'
             : 'Počet řádků i sloupců sedí, ale hodnoty se neshodují.',
         onWarning
     );
