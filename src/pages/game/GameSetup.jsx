@@ -5,7 +5,6 @@ import { czechProfanities } from '../../data/czechProfanities';
 import './GameSetup.css';
 
 leoProfanity.loadDictionary('en');
-leoProfanity.add(czechProfanities);
 
 const normalizeForProfanity = (text) => {
     return text.toLowerCase()
@@ -36,8 +35,9 @@ export default function GameSetup({ gameData }) {
             return;
         }
         const exposedName = normalizeForProfanity(trimmedName);
-        const isProfane = czechProfanities.some(badWord => exposedName.includes(badWord)) || leoProfanity.check(trimmedName) || leoProfanity.check(exposedName);
-        if (isProfane) {
+        const isCzechProfane = czechProfanities.some(badWord => exposedName.includes(badWord));
+        const isEnglishProfane = leoProfanity.check(trimmedName) || leoProfanity.check(exposedName);
+        if (isCzechProfane || isEnglishProfane) {
             setError('Tato přezdívka obsahuje nevhodné výrazy. Zvol prosím jinou.');
             return;
         }
