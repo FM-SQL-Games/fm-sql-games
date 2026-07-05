@@ -38,9 +38,9 @@ export default function Navbar() {
                     value={i18n.language} 
                     onChange={handleLanguageChange}
                 >
-                    {Object.entries(SUPPORTED_LANGUAGES).map(([code, { label, flag }]) => (
+                    {Object.entries(SUPPORTED_LANGUAGES).map(([code]) => (
                         <option key={code} value={code}>
-                            {flag} {code.toUpperCase()}
+                            {code.toUpperCase()}
                         </option>
                     ))}
                 </select>

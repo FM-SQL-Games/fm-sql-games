@@ -7,7 +7,7 @@ import { fetchLeaderboardData } from '../../utils/supabaseLogger';
 import { isSupabaseConfigured } from '../../supabaseClient';
 
 export default function LeaderboardPage() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const availableGames = gameLibrary
         .filter((game) => game.config.active !== false)
         .map((game) => ({
