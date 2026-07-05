@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './VictoryScreen.css';
+import { useTranslation } from 'react-i18next';
 import { isSupabaseConfigured } from '../supabaseClient';
 
 export default function VictoryScreen({
@@ -10,6 +11,7 @@ export default function VictoryScreen({
     onBackToMenu,
     onSubmitScore,
 }) {
+    const { t } = useTranslation();
     const [isSubmitted, setIsSubmitted] = useState(false);
     /**
      * Odesílá skóre hráče do leaderboardu a aktualizuje stav odeslání, aby zobrazil potvrzení o úspěšném odeslání.
@@ -22,16 +24,16 @@ export default function VictoryScreen({
         <div className="victory-overlay">
             <div className="victory-modal">
                 <div className="victory-header">
-                    <h2> MISE DOKONČENA! </h2>
+                    <h2>{t('victory.title')}</h2>
                 </div>
 
                 <div className="victory-body">
                     <p>
-                        Úspěšně jsi pokořil výzvu ve hře <strong>{gameName}</strong>
+                        {t('victory.success_msg', { gameName })}
                     </p>
 
                     <div className="score-display">
-                        <span className="score-label">Tvé finální skóre:</span>
+                        <span className="score-label">{t('victory.final_score')}</span>
                         <span className="score-value">{score}</span>
                     </div>
                 </div>
@@ -39,30 +41,30 @@ export default function VictoryScreen({
                     {!isSupabaseConfigured ? (
                         <div className="submission-confirm">
                             <p className="leaderboard-hint warning">
-                                Lokální režim - Ukládání do online žebříčku je deaktivováno.
+                                {t('victory.local_mode')}
                             </p>
                         </div>
                     ) : !isSubmitted ? (
                         <div className="submission-confirm">
                             <p className="leaderboard-hint">
-                                Přeješ si uložit výsledek do leaderboardu pod přezdívkou{' '}
+                                {t('victory.save_hint', { playerName })}
                                 <strong>{playerName}</strong>?
                             </p>
                             <button className="btn-submit" onClick={handleSubmit}>
-                                Uložit do žebříčku
+                                {t('victory.save_btn')}
                             </button>
                         </div>
                     ) : (
-                        <p className="success-msg">Skóre bylo úspěšně odesláno!</p>
+                        <p className="success-msg">{t('victory.success_sent')}</p>
                     )}
                 </div>
 
                 <div className="victory-actions">
                     <button className="btn-menu" onClick={onBackToMenu}>
-                        Zpět do menu
+                        {t('victory.back_to_menu')}
                     </button>
                     <button className="btn-restart" onClick={onRestart}>
-                        Hrát znovu
+                        {t('victory.play_again')}
                     </button>
                 </div>
             </div>

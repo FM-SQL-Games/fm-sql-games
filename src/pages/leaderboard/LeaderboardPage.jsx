@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './LeaderboardPage.css';
+import { useTranslation } from 'react-i18next';
 import Navbar from '../../components/Navbar';
 import { gameLibrary } from '../../data/gameLibrary';
 import { fetchLeaderboardData } from '../../utils/supabaseLogger';
 import { isSupabaseConfigured } from '../../supabaseClient';
 
 export default function LeaderboardPage() {
+    const { t, i18n } = useTranslation();
     const availableGames = gameLibrary
         .filter((game) => game.config.active !== false)
         .map((game) => ({
@@ -40,7 +42,7 @@ export default function LeaderboardPage() {
         <div className="leaderboard-container">
             <Navbar />
             <div className="leaderboard-content">
-                <h1>Žebříček nejlepších hráčů</h1>
+                <h1>{t('leaderboard.title')}</h1>
                 <div className="tabs">
                     {availableGames.map((game) => (
                         <button
@@ -56,25 +58,23 @@ export default function LeaderboardPage() {
                     <table className="leaderboard-table">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Přezdívka</th>
-                                <th>Skóre</th>
-                                <th>Datum</th>
+                                <th>{t('leaderboard.th_rank')}</th>
+                                <th>{t('leaderboard.th_player')}</th>
+                                <th>{t('leaderboard.th_score')}</th>
+                                <th>{t('leaderboard.th_date')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
                                 <tr>
                                     <td colSpan="4" className="empty-state">
-                                        Načítám data z databáze...
+                                        {t('leaderboard.loading')}
                                     </td>
                                 </tr>
                             ) : !isSupabaseConfigured ? (
                                 <tr>
                                     <td colSpan="4" className="empty-state warning">
-                                        Aplikace běží v lokálním testovacím režimu.
-                                        <br />
-                                        Připojení k online žebříčku není dostupné.
+                                        {t('leaderboard.local_mode')}
                                     </td>
                                 </tr>
                             ) : currentData.length > 0 ? (
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
                             ) : (
                                 <tr>
                                     <td colSpan="4" className="empty-state">
-                                        Zatím zde nejsou žádné záznamy. Buď první!
+                                        {t('leaderboard.no_records')}
                                     </td>
                                 </tr>
                             )}

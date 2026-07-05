@@ -46,3 +46,13 @@
     color: white;
     background-color: #ef7d00;
 }
+
+.lang-switcher {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: white;
+    color: #666;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
