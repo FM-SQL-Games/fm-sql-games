@@ -106,7 +106,7 @@ const resources = {
                 leaderboard: 'Leaderboard',
                 feedback: 'Give us feedback!'
             },
-            hhome: {
+            home: {
                 title: 'SQL Learning Platform',
                 subtitle: 'Practice the SQL database language in a fun way. Instead of dry theory, themed minigames await you, where you solve problems using SQL queries.',
                 play: 'PLAY',
