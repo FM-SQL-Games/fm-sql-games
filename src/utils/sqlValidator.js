@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { Parser } from 'node-sql-parser';
+import i18n from '../i18n';
 /**
  * Zvaliduje a upraví SQL dotaz před jeho spuštěním.
  * @param {string} query - SQL dotaz
@@ -14,23 +15,23 @@ export const preprocessQuery = (query) => {
         const statements = Array.isArray(obj) ? obj : [obj];
 
         if (statements.length > 1) {
-            throw new Error('Pouze jeden dotaz najednou!');
+            throw new Error(i18n.t('validator.multiple_queries'));
         }
 
         const statement = statements[0];
         if (statement.type !== 'select') {
-            throw new Error('V tvém příkazu jsou nějaká nehezká slova.');
+            throw new Error(i18n.t('validator.profanity'));
         }
 
         return trimmed;
     } catch (error) {
         if (
-            error.message === 'Pouze jeden dotaz najednou!' ||
-            error.message === 'V tvém příkazu jsou nějaká nehezká slova.'
+            error.message === i18n.t('validator.multiple_queries') ||
+            error.message === i18n.t('validator.profanity')
         ) {
             throw error;
         }
-        throw new Error('Chyba v syntaxi.');
+        throw new Error(i18n.t('validator.syntax_error'));
     }
 };
 
@@ -74,7 +75,7 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
     const isUserEmpty = !userRes || userRes.length === 0 || !userRes[0].values || userRes[0].values.length === 0;
     const isRefEmpty = !referenceRes || referenceRes.length === 0 || !referenceRes[0].values || referenceRes[0].values.length === 0;
     if (isUserEmpty && isRefEmpty) return true; 
-    if (isUserEmpty !== isRefEmpty) return setWarning('Dotaz nevrátil žádná data. Zkontroluj podmínky ve WHERE nebo název tabulky.', onWarning);
+    if (isUserEmpty !== isRefEmpty) return setWarning(i18n.t('validator.empty_result'), onWarning);
 
     const uTab = userRes[0];
     const rTab = referenceRes[0];
@@ -83,8 +84,8 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
     if (uTab.columns.length !== rTab.columns.length) {
         return setWarning(
             uTab.columns.length < rTab.columns.length
-                ? 'Výsledek má méně sloupců. Vybíráš správné sloupce za SELECT?'
-                : 'Výsledek má příliš mnoho sloupců. Zkontroluj SELECT.',
+                ? i18n.t('validator.less_columns')
+                : i18n.t('validator.more_columns'),
             onWarning
         );
     }
@@ -93,22 +94,22 @@ export const isSuccessful = (userQuery, referenceQuery, userRes, referenceRes, s
     if (uTab.values.length !== rTab.values.length) {
         return setWarning(
             uTab.values.length < rTab.values.length
-                ? 'Výsledek má méně řádků. Filtrujete příliš přísně?'
-                : 'Výsledek má příliš mnoho řádků. Zkus zpřesnit podmínky nebo typ JOINu.',
+                ? i18n.t('validator.less_rows')
+                : i18n.t('validator.more_rows'),
             onWarning
         );
     }
 
    const colMap = findColMap(uTab, rTab, rules);
 
-   if(!colMap) return setWarning('Sloupce se nepodařilo namapovat. Zkontroluj vybrané hodnoty.', onWarning);
+   if(!colMap) return setWarning(i18n.t('validator.column_mismatch'), onWarning);
 
    const dataMatch =  compareData(uTab.values, rTab.values, colMap, rules.strictRowOrder)
 
    if (!dataMatch) return setWarning(
         rules.strictRowOrder
-            ? 'Data sedí, ale pořadí řádků nesedí - zkontroluj ORDER BY.'
-            : 'Počet řádků i sloupců sedí, ale hodnoty se neshodují.',
+            ? i18n.t('validator.row_order')
+            : i18n.t('validator.value_mismatch'),
         onWarning
     );
 

@@ -9,19 +9,24 @@
 
 .home-header {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 60px;
+    padding: 0 20px;
 }
 
 .home-header h1 {
     color: #ef7d00; /* TUL Oranžová */
     font-size: 3rem;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     letter-spacing: -1px;
+    font-weight: 800; 
 }
 
 .home-header p {
-    color: #666;
+    color: #555;
     font-size: 1.2rem;
+    line-height: 1.6;
+    max-width: 750px; 
+    margin: 0 auto;
 }
 
 .game-grid {
@@ -99,4 +104,11 @@
 
 .game-card:hover .play-button {
     background-color: #cc6a00;
+}
+
+.no-games {
+    color:black;
+    text-align: center;
+    grid-column: 1 / -1;
+    margin-top: 2rem;
 }

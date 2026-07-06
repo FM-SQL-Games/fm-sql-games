@@ -17,9 +17,12 @@ import VictoryScreen from '../../components/VictoryScreen';
 import './GamePage.css';
 import LoadDialog from '../../components/LoadDialog';
 
+import { useTranslation } from 'react-i18next';
+
 export default function GamePage({ gameData }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
 
     const sessionId = location.state?.sessionId || 'unknown-session';
     const playerName = location.state?.playerName || 'Host';
@@ -43,7 +46,7 @@ export default function GamePage({ gameData }) {
     const [currentScene, setCurrentScene] = useState(1);
     const [lastSuccessScene, setLastSuccessScene] = useState(0);
     const currSceneData = gameData.scenes[currentScene - 1];
-    const [query, setQuery] = useState('SEM PIŠ DOTAZY');
+    const [query, setQuery] = useState(t('game.editor_placeholder'));
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [isGameFinished, setIsGameFinished] = useState(false);
@@ -196,7 +199,7 @@ export default function GamePage({ gameData }) {
         loadScore(foundData.score);
         setCurrentScene(foundData.lastSuccess + 1);
         setShowLoadDialog(false);
-        setQuery('SEM PIŠ DOTAZY');
+        setQuery(t('game.editor_placeholder'));
     };
 
     /**
@@ -227,7 +230,7 @@ export default function GamePage({ gameData }) {
         setIsGameFinished(false);
         setCurrentScene(1);
         setLastSuccessScene(0);
-        setQuery('SEM PIŠ DOTAZY');
+        setQuery(t('game.editor_placeholder'));
         setResult(null);
         setError(null);
         resetScore();
@@ -298,7 +301,7 @@ export default function GamePage({ gameData }) {
                     submitScene();
                 }
                 if (forcePass) {
-                    setError('Z důvodu technické chyby v zadání tě pouštíme dál!');
+                    setError(t('game.force_pass_msg'));
                 }
             } else {
                 registerMistake();
@@ -349,20 +352,19 @@ export default function GamePage({ gameData }) {
     if (dbInitError) {
         return (
             <div className={`error-screen ${config.theme}`}>
-                <h1>Systémová chyba</h1>
+                <h1>{t('game.system_error')}</h1>
                 <p>
-                    <strong>Detail:</strong> {dbInitError}
+                    <strong>{t('game.detail')}</strong> {dbInitError}
                     <br />
                     <br />
-                    Nepodařilo se správně připravit herní prostředí. Zkontroluj připojení k
-                    internetu nebo zkus stránku obnovit.
+                    {t('game.db_init_fail')}
                 </p>
                 <div className="error-actions">
                     <button className="btn-primary" onClick={() => window.location.reload()}>
-                        Obnovit stránku
+                        {t('game.refresh_page')}
                     </button>
                     <button className="btn-secondary" onClick={() => navigate('/')}>
-                        Zpět do menu
+                        {t('game.back_to_menu')}
                     </button>
                 </div>
             </div>
@@ -409,19 +411,19 @@ export default function GamePage({ gameData }) {
                             handleBackToSetup();
                         }}
                     >
-                        &#8617; Zpět
+                        &#8617;{t('game.btn_back')}
                     </button>
                     <button
                         className={`tool-btn ${activeOverlay === 'table' ? 'active' : ''}`}
                         onClick={() => toggleOverlay('table')}
                     >
-                        📊 Tabulka
+                        {t('game.btn_table')}
                     </button>
                     <button
                         className={`tool-btn ${activeOverlay === 'schema' ? 'active' : ''}`}
                         onClick={() => toggleOverlay('schema')}
                     >
-                        📜 Schéma
+                        {t('game.btn_schema')}
                     </button>
                     <button
                         className={`tool-btn ${activeOverlay === 'hint' ? 'active' : ''} ${showAns ? 'blink' : ''}`}
@@ -430,13 +432,13 @@ export default function GamePage({ gameData }) {
                             registerHint();
                         }}
                     >
-                        💡 Nápověda
+                        {t('game.btn_hint')}
                     </button>
                 </div>
                 <div className="overlay-content">
                     {activeOverlay === 'table' && (
                         <div className="content-box">
-                            <h3>VÝSLEDEK DOTAZU</h3>
+                            <h3>{t('game.query_result')}</h3>
 
                             {warning && <div className="warning-box">⚠️ {warning}</div>}
 
@@ -464,14 +466,14 @@ export default function GamePage({ gameData }) {
                                     </table>
                                 </div>
                             ) : (
-                                <p>Zatím žádná data. Spusť dotaz!</p>
+                                <p>{t('game.no_data')}</p>
                             )}
                         </div>
                     )}
 
                     {activeOverlay === 'schema' && (
                         <div className="content-box">
-                            <h3>SCHÉMA</h3>
+                            <h3>{t('game.schema_title')}</h3>
                             {config.schemaImg ? (
                                 <img
                                     src={`${import.meta.env.BASE_URL}assets/${config.schemaImg}`}
@@ -486,7 +488,7 @@ export default function GamePage({ gameData }) {
                                         color: '#666',
                                     }}
                                 >
-                                    <p>Dokumentace k této databázi nebyla nalezena.</p>
+                                    <p>{t('game.no_schema')}</p>
                                 </div>
                             )}
                         </div>
@@ -494,34 +496,29 @@ export default function GamePage({ gameData }) {
 
                     {activeOverlay === 'hint' && (
                         <div className="content-box">
-                            <h3>NÁPOVĚDA</h3>
+                            <h3>{t('game.hint_title')}</h3>
                             {currSceneData.keywords && currSceneData.keywords.length > 0 ? (
                                 <div className="hint-content">
-                                    <p className="hint-intro">
-                                        K vyřešení tohoto úkolu zkus použít tyto příkazy:
-                                    </p>
+                                    <p className="hint-intro">{t('game.hint_intro')}</p>
                                     <ul className="keyword-list">
                                         {currSceneData.keywords.map((keyword, index) => (
                                             <li key={index} className="hint-item">
                                                 <strong className="hint-keyword">{keyword}</strong>
                                                 <span className="hint-definition">
-                                                    {sqlDictionary[keyword] ||
-                                                        ' - (Definice chybí)'}
+                                                    {sqlDictionary[keyword] || t('game.definition_missing')}
                                                 </span>
                                             </li>
                                         ))}
                                     </ul>
                                     {showAns === true && (
                                         <div className="hint-ans-container">
-                                            <strong className="hint-ans-header">ODPOVĚĎ JE</strong>
+                                            <strong className="hint-ans-header">{t('game.answer_is')}</strong>
                                             <p className="hint-ans-text">{currSceneData.answer}</p>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <p className="hint-text">
-                                    Pro tuto úroveň není k dispozici žádná speciální nápověda.
-                                </p>
+                                <p className="hint-text">{t('game.no_hint')}</p>
                             )}
                         </div>
                     )}
@@ -531,13 +528,13 @@ export default function GamePage({ gameData }) {
             <div className="main-viewport" style={sceneStyle}>
                 <div className="info-bar">
                     <span>
-                        Přezdívka: <strong>{playerName}</strong>
+                        {t('game.info_player')} <strong>{playerName}</strong>
                     </span>{' '}
                     |{' '}
                     <span>
-                        Scéna: {currentScene}/{gameData.number_of_scenes}
+                        {t('game.info_scene')} {currentScene}/{gameData.number_of_scenes}
                     </span>{' '}
-                    | <span>Skóre: {score}</span>
+                    | <span>{t('game.info_score')} {score}</span>
                 </div>
 
                 <div className="navigation">
@@ -554,11 +551,9 @@ export default function GamePage({ gameData }) {
                 </div>
 
                 <div className="task-container">
-                    <h3>Úkol {currSceneData.id}</h3>
+                    <h3>{t('game.task_title', { id: currSceneData.id })}</h3>
                     <p>{currSceneData.story}</p>
-                    <p>
-                        <small>{currSceneData.prompt}</small>
-                    </p>
+                    <p><small>{currSceneData.prompt}</small></p>
                 </div>
 
                 <div className="editor-section">
@@ -569,13 +564,13 @@ export default function GamePage({ gameData }) {
                         padding={15}
                         className="sql-editor"
                         onFocus={() => {
-                            if (query === 'SEM PIŠ DOTAZY') {
+                            if (query === t('game.editor_placeholder')) {
                                 setQuery('');
                             }
                         }}
                     />
                     <button className="execute-btn" onClick={runSql}>
-                        PROVÉST DOTAZ
+                        {t('game.execute_btn')}
                     </button>
                 </div>
             </div>

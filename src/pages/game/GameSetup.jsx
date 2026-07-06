@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import leoProfanity from 'leo-profanity';
 import { czechProfanities } from '../../data/czechProfanities';
 import './GameSetup.css';
+import { useTranslation } from 'react-i18next';
 
 leoProfanity.loadDictionary('en');
 
@@ -19,6 +20,7 @@ const normalizeForProfanity = (text) => {
 
 export default function GameSetup({ gameData }) {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [playerName, setPlayerName] = useState(localStorage.getItem('sqlPlayerName') || '');
     const [error, setError] = useState('');
 
@@ -31,14 +33,14 @@ export default function GameSetup({ gameData }) {
         const trimmedName = playerName.trim();
 
         if (trimmedName.length < 3) {
-            setError('Přezdívka musí být alespoň 3 znaky dlouhá.');
+            setError(t('setup.error_short'));
             return;
         }
         const exposedName = normalizeForProfanity(trimmedName);
         const isCzechProfane = czechProfanities.some(badWord => exposedName.includes(badWord));
         const isEnglishProfane = leoProfanity.check(trimmedName) || leoProfanity.check(exposedName);
         if (isCzechProfane || isEnglishProfane) {
-            setError('Tato přezdívka obsahuje nevhodné výrazy. Zvol prosím jinou.');
+            setError(t('setup.error_profane'));
             return;
         }
         const sessionId = window.crypto?.randomUUID
@@ -63,7 +65,7 @@ export default function GameSetup({ gameData }) {
                 <p>{config.setupDescription}</p>
 
                 <div className="player-input-section">
-                    <label htmlFor="nickname">Zadej svou přezdívku:</label>
+                    <label htmlFor="nickname">{t('setup.label')}</label>
                     <input
                         id="nickname"
                         type="text"
@@ -72,7 +74,7 @@ export default function GameSetup({ gameData }) {
                             setPlayerName(e.target.value);
                             setError('');
                         }}
-                        placeholder="Tvoje přezdívka..."
+                        placeholder={t('setup.placeholder')}
                         maxLength={20}
                         className={error ? 'input-error' : ''}
                     />
@@ -86,7 +88,7 @@ export default function GameSetup({ gameData }) {
                     {config.btnText}
                 </button>
                 <button className="setup-btn secondary" onClick={handleBack}>
-                    ZPĚT
+                    {t('setup.back')}
                 </button>
             </div>
         </div>
