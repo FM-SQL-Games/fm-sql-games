@@ -1,0 +1,68 @@
+{
+    "config": {
+        "id": "tulix_2",
+        "theme": "tulix-theme",
+        "title": "Noc Vědy: Pokročilí",
+        "description": "Známe jméno, ale univerzita je obrovská. Propoj databáze a zjisti, ve které místnosti se schovává!",
+        "cardImage": "pageAssets/NocVedy_experienced/scenes/5.jpg",
+        "active": true,
+        "dbName": "NocVedyExperienced",
+        "assetFolder": "NocVedy_experienced",
+        "setupTitle": "PÁTRÁNÍ POKRAČUJE",
+        "setupDescription": "Dobrá práce! Víme, že hledáme robota jménem TULix. Z minula víme, že má u sebe číslo místnosti (id_mistnosti), ale my přece nevíme, kde místnost s tímto číslem je! V této úrovni se naučíš spojovat dvě různé tabulky (roboti a mistnosti). Tvým cílem je zjistit přesný název místnosti, kde se náš robot nachází.",
+        "btnText": "Spojit data",
+        "loadingText": "Načítám mapu univerzity...",
+        "schemaImg": "NocVedyExp_scheme.png",
+        "lang" : "cs"
+    },
+    "createScript": "PRAGMA foreign_keys = ON; CREATE TABLE budovy (id int NOT NULL PRIMARY KEY, oznaceni TEXT NOT NULL, tajny_kod int NOT NULL); CREATE TABLE mistnosti (id int NOT NULL PRIMARY KEY, nazev TEXT NOT NULL, id_budovy int NOT NULL, FOREIGN KEY (id_budovy) REFERENCES budovy (id)); CREATE TABLE roboti (id int NOT NULL PRIMARY KEY, jmeno TEXT NOT NULL, barva TEXT NOT NULL, baterie int NOT NULL, id_mistnosti int NOT NULL, FOREIGN KEY (id_mistnosti) REFERENCES mistnosti (id));",
+    "insertScript": "INSERT INTO budovy (id, oznaceni, tajny_kod) VALUES (1, 'Budova A', 1234), (2, 'Budova F', 42); INSERT INTO mistnosti (id, nazev, id_budovy) VALUES (1, 'Sklad', 1), (2, 'Učebna', 1), (3, 'Kancelář', 2), (4, 'Laboratoř', 2), (5, 'Knihovna', 1); INSERT INTO roboti (id, jmeno, barva, baterie, id_mistnosti) VALUES (1, 'Karel', 'modrá', 80, 1), (2, 'Pepa', 'stříbrná', 15, 2), (3, 'TULix', 'stříbrná', 10, 4), (4, 'R2D2', 'modrá', 50, 4), (5, 'Wall-E', 'žlutá', 5, 1), (6, 'T-800', 'černá', 90, 3), (7, 'Tonda', 'červená', 100, 5);",
+    "number_of_scenes": 5,
+    "scenes": [
+        {
+            "id": 1,
+            "img": "1.jpg",
+            "story": "V naší nové databázi se objevila tabulka 'mistnosti'. Pojďme se podívat, jaké místnosti se nacházejí v prvním patře.",
+            "prompt": "Najdi v tabulce 'mistnosti' všechny záznamy, které mají id rovno 1, 3 nebo 5.",
+            "answer": "SELECT * FROM mistnosti WHERE id IN (1, 3, 5);",
+            "keywords": ["IN"],
+            "strict_rules": []
+        },
+        {
+            "id": 2,
+            "img": "2.jpg",
+            "story": "Potřebujeme vědět, jací roboti se nacházejí ve vybraných učebnách.",
+            "prompt": "Vypiš z tabulky 'roboti' ty, kteří mají id_mistnosti 2 nebo 4.",
+            "answer": "SELECT * FROM roboti WHERE id_mistnosti IN (2, 4);",
+            "keywords": ["IN"],
+            "strict_rules": []
+        },
+        {
+            "id": 3,
+            "img": "3.jpg",
+            "story": "Teď přijde to hlavní kouzlo! Abychom viděli jména robotů i názvy jejich místností vedle sebe, musíme tabulky spojit.",
+            "prompt": "Vypiš sloupce 'roboti.jmeno' a 'mistnosti.nazev'. Spoj tabulky pomocí JOIN přes klíče id_mistnosti a id.",
+            "answer": "SELECT roboti.jmeno, mistnosti.nazev FROM roboti JOIN mistnosti ON roboti.id_mistnosti = mistnosti.id;",
+            "keywords": ["JOIN", "ON"],
+            "strict_rules": []
+        },
+        {
+            "id": 4,
+            "img": "4.jpg",
+            "story": "Zúžíme okruh hledání. Kde jsou roboti, kterým dochází energie?",
+            "prompt": "Vypiš názvy místností ('mistnosti.nazev'), ve kterých se nacházejí roboti s baterií menší než 20.",
+            "answer": "SELECT mistnosti.nazev FROM roboti JOIN mistnosti ON roboti.id_mistnosti = mistnosti.id WHERE roboti.baterie < 20;",
+            "keywords": ["JOIN", "WHERE"],
+            "strict_rules": []
+        },
+        {
+            "id": 5,
+            "img": "5.jpg",
+            "story": "Jdeme do finále! Zjistíme, v jaké místnosti je přesně náš ztracený kamarád.",
+            "prompt": "Najdi název místnosti ('mistnosti.nazev'), kde se nachází robot se jménem 'TULix'.",
+            "answer": "SELECT mistnosti.nazev FROM roboti JOIN mistnosti ON roboti.id_mistnosti = mistnosti.id WHERE roboti.jmeno = 'TULix';",
+            "keywords": ["JOIN", "WHERE"],
+            "strict_rules": []
+        }
+    ]
+}
