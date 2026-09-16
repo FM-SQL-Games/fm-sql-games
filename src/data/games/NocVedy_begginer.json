@@ -1,0 +1,68 @@
+{
+    "config": {
+        "id": "tulix_1",
+        "theme": "tulix-theme",
+        "title": "Noc Vědy: Začátečníci",
+        "description": "Ztratil se nám robot! Zjisti pomocí SQL dotazů, jak vypadá a jak se jmenuje.",
+        "cardImage": "pageAssets/NocVedy_begginer/tulix-theme-beg.jpg",
+        "active": true,
+        "dbName": "NocVedyBegginer",
+        "assetFolder": "NocVedy_begginer",
+        "setupTitle": "POPLACH NA UNIVERZITĚ!",
+        "setupDescription": "Ztratil se náš experimentální robot. Víme jen, že se toulá někde po chodbách a dochází mu baterie. Staň se databázovým detektivem! V této úrovni se naučíš základy hledání v databázi (filtrování). Pomocí příkazů zjistíme, jak robot vypadá a jaké je jeho jméno. Přečti si zadání, napiš SQL kód dolů a zachraň ho!",
+        "btnText": "Spustit pátrání",
+        "loadingText": "Načítám databázi robotů...",
+        "schemaImg": "NocVedyBeg_scheme.png",
+        "lang" : "cs"
+    },
+    "createScript": "PRAGMA foreign_keys = ON; CREATE TABLE roboti (id int NOT NULL PRIMARY KEY, jmeno TEXT NOT NULL, barva TEXT NOT NULL, baterie int NOT NULL, id_mistnosti int NOT NULL);",
+    "insertScript": "INSERT INTO roboti (id, jmeno, barva, baterie, id_mistnosti) VALUES (1, 'Karel', 'modrá', 80, 1), (2, 'Pepa', 'stříbrná', 15, 2), (3, 'TULix', 'stříbrná', 10, 4), (4, 'R2D2', 'modrá', 50, 4), (5, 'Wall-E', 'žlutá', 5, 1), (6, 'T-800', 'černá', 90, 3), (7, 'Tonda', 'červená', 100, 5);",
+    "number_of_scenes": 5,
+    "scenes": [
+        {
+            "id": 1,
+            "img": "1.jpg",
+            "story": "Kolemjdoucí student viděl, že robot, který utekl, měl jasně červenou barvu. Pojďme zkontrolovat naši databázi.",
+            "prompt": "Vypiš z tabulky 'roboti' všechny záznamy, kde je barva 'červená'.",
+            "answer": "SELECT * FROM roboti WHERE barva = 'červená';",
+            "keywords": ["SELECT", "FROM", "WHERE"],
+            "strict_rules": []
+        },
+        {
+            "id": 2,
+            "img": "2.jpg",
+            "story": "Ne, to nebyl on! Paní doktorka nám právě napsala, že ztracenému robotovi kriticky dochází šťáva.",
+            "prompt": "Najdi všechny roboty, kteří mají stav baterie menší než 20.",
+            "answer": "SELECT * FROM roboti WHERE baterie < 20;",
+            "keywords": ["WHERE"],
+            "strict_rules": []
+        },
+        {
+            "id": 3,
+            "img": "3.jpg",
+            "story": "Z kamerového záznamu jsme zjistili, že robot nemá nátěr. Je buď čistě stříbrný, nebo modrý.",
+            "prompt": "Najdi roboty, jejichž barva je 'modrá' NEBO 'stříbrná'.",
+            "answer": "SELECT * FROM roboti WHERE barva = 'modrá' OR barva = 'stříbrná';",
+            "keywords": ["OR"],
+            "strict_rules": []
+        },
+        {
+            "id": 4,
+            "img": "4.jpg",
+            "story": "Další stopa! Na kusu upadnutého plechu bylo vyryté písmeno 'T'. To musí být první písmeno jeho jména.",
+            "prompt": "Najdi roboty, jejichž jméno začíná na písmeno 'T'.",
+            "answer": "SELECT * FROM roboti WHERE jmeno LIKE 'T%';",
+            "keywords": ["LIKE"],
+            "strict_rules": []
+        },
+        {
+            "id": 5,
+            "img": "5.jpg",
+            "story": "Už to skoro máme! Spojíme všechny stopy dohromady, abychom zjistili jeho přesné jméno.",
+            "prompt": "Najdi robota, který má barvu 'stříbrná' A ZÁROVEŇ (AND) jeho jméno začíná na 'T'.",
+            "answer": "SELECT * FROM roboti WHERE barva = 'stříbrná' AND jmeno LIKE 'T%';",
+            "keywords": ["AND", "LIKE"],
+            "strict_rules": []
+        }
+    ]
+}

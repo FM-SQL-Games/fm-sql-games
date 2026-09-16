@@ -1,0 +1,41 @@
+{
+    "config": {
+        "id": "tulix_3",
+        "theme": "tulix-theme-",
+        "title": "Noc Vědy: Experti",
+        "description": "Našli jsme laboratoř, ale je zamčená! Vypočítej z databáze záchranný kód.",
+        "cardImage": "pageAssets/NocVedy_experts/tulix-theme-pert.jpg",
+        "active": true,
+        "dbName": "NocVedyExperts",
+        "assetFolder": "NocVedy_experts",
+        "setupTitle": "ZABOUCHNUTÉ DVEŘE",
+        "setupDescription": "TULix je v Laboratoři v Budově F! Když jsme ale dorazili na místo, zjistili jsme, že na dveřích je číselný zámek. Kód získáme jedině pomocí matematiky nad naší databází. V této úrovni budeš využívat pokročilé funkce jako COUNT (počítání) a AVG (průměr).",
+        "btnText": "Hacknout zámek",
+        "loadingText": "Připojuji se k zámku...",
+        "schemaImg": "NocVedyPert_scheme.png",
+        "lang" : "cs"
+    },
+    "createScript": "PRAGMA foreign_keys = ON; CREATE TABLE budovy (id int NOT NULL PRIMARY KEY, oznaceni TEXT NOT NULL, tajny_kod int NOT NULL); CREATE TABLE mistnosti (id int NOT NULL PRIMARY KEY, nazev TEXT NOT NULL, id_budovy int NOT NULL, FOREIGN KEY (id_budovy) REFERENCES budovy (id)); CREATE TABLE roboti (id int NOT NULL PRIMARY KEY, jmeno TEXT NOT NULL, barva TEXT NOT NULL, baterie int NOT NULL, id_mistnosti int NOT NULL, FOREIGN KEY (id_mistnosti) REFERENCES mistnosti (id));",
+    "insertScript": "INSERT INTO budovy (id, oznaceni, tajny_kod) VALUES (1, 'Budova A', 1234), (2, 'Budova F', 42); INSERT INTO mistnosti (id, nazev, id_budovy) VALUES (1, 'Sklad', 1), (2, 'Učebna', 1), (3, 'Kancelář', 2), (4, 'Laboratoř', 2), (5, 'Knihovna', 1); INSERT INTO roboti (id, jmeno, barva, baterie, id_mistnosti) VALUES (1, 'Karel', 'modrá', 80, 1), (2, 'Pepa', 'stříbrná', 15, 2), (3, 'TULix', 'stříbrná', 10, 4), (4, 'R2D2', 'modrá', 50, 4), (5, 'Wall-E', 'žlutá', 5, 1), (6, 'T-800', 'černá', 90, 3), (7, 'Tonda', 'červená', 100, 5);",
+    "number_of_scenes": 2,
+    "scenes": [
+        {
+            "id": 1,
+            "img": "1.jpg",
+            "story": "Nejprve musíme zjistit, jak je univerzita vytížená. Spočítáme roboty v jednotlivých budovách.",
+            "prompt": "Spoj tabulky 'roboti', 'mistnosti' a 'budovy'. Vypiš sloupec 'budovy.oznaceni' a počet robotů. Nezapomeň data seskupit podle budovy pomocí GROUP BY.",
+            "answer": "SELECT budovy.oznaceni, COUNT(roboti.id) FROM roboti JOIN mistnosti ON roboti.id_mistnosti = mistnosti.id JOIN budovy ON mistnosti.id_budovy = budovy.id GROUP BY budovy.oznaceni;",
+            "keywords": ["JOIN", "COUNT", "GROUP BY"],
+            "strict_rules": []
+        },
+        {
+            "id": 2,
+            "img": "2.jpg",
+            "story": "Výborně! A teď finální kód pro odemčení dveří laboratoře. Systém vyžaduje zadat přesný průměrný stav baterie robotů v této místnosti.",
+            "prompt": "Spoj tabulky 'roboti' a 'mistnosti'. Zjisti průměrný stav baterie u všech robotů, kteří se nacházejí v místnosti s názvem 'Laboratoř'.",
+            "answer": "SELECT AVG(roboti.baterie) FROM roboti JOIN mistnosti ON roboti.id_mistnosti = mistnosti.id WHERE mistnosti.nazev = 'Laboratoř';",
+            "keywords": ["AVG","WHERE"],
+            "strict_rules": []
+        }
+    ]
+}
