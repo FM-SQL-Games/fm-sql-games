@@ -12,11 +12,11 @@
         "setupDescription": "Ztratil se náš experimentální robot. Víme jen, že se toulá někde po chodbách a dochází mu baterie. Staň se databázovým detektivem! V této úrovni se naučíš základy hledání v databázi (filtrování). Pomocí příkazů zjistíme, jak robot vypadá a jaké je jeho jméno. Přečti si zadání, napiš SQL kód dolů a zachraň ho!",
         "btnText": "Spustit pátrání",
         "loadingText": "Načítám databázi robotů...",
-        "schemaImg": "NocVedcuBeg_scheme.png",
+        "schemaImg": "NocVedcuBeg_scheme1.png",
         "lang" : "cs"
     },
     "createScript": "PRAGMA foreign_keys = ON; CREATE TABLE roboti (id int NOT NULL PRIMARY KEY, jmeno TEXT NOT NULL, barva TEXT NOT NULL, baterie int NOT NULL, id_mistnosti int NOT NULL);",
-    "insertScript": "INSERT INTO roboti (id, jmeno, barva, baterie, id_mistnosti) VALUES (1, 'Karel', 'modra', 80, 101), (2, 'Pepa', 'stribrna', 30, 102), (3, 'Pepina', 'bila', 10, 104), (4, 'R2D2', 'modra', 50, 114), (5, 'Wall-E', 'zluta', 5, 101), (6, 'T-800', 'cerna', 90, 103), (7, 'Tonda', 'cervena', 100, 105), (8,'TULix, 'stribrna', 10, 101), (9, 'Prcek', 'zelena', 21, 106), (10, 'Bumblebee', 'zluta', 12, 110);", 
+    "insertScript": "INSERT INTO roboti (id, jmeno, barva, baterie, id_mistnosti) VALUES (1, 'Karel', 'modra', 80, 101), (2, 'Pepa', 'stribrna', 30, 102), (3, 'Pepina', 'bila', 10, 104), (4, 'R2D2', 'modra', 50, 114), (5, 'Wall-E', 'zluta', 5, 101), (6, 'T-800', 'cerna', 90, 103), (7, 'Tonda', 'cervena', 100, 105), (8,'TULix', 'stribrna', 10, 101), (9, 'Prcek', 'zelena', 21, 106), (10, 'Bumblebee', 'zluta', 12, 110);", 
     "number_of_scenes": 5,
     "scenes": [
         {
@@ -59,8 +59,8 @@
             "id": 5,
             "img": "obr5.png",
             "story": "Už to skoro máme! Spojíme všechny stopy dohromady. Hledáme bílého robota, jehož jméno začíná na 'P'.",
-            "prompt": "Zjisti jeho jméno a místnost, kde se nachází. Použij AND, protože musí platit obě podmínky současně.",
-            "answer": "SELECT jmeno, mistnost FROM roboti WHERE barva = 'bila' AND jmeno LIKE 'P%';",
+            "prompt": "Zjisti jeho jméno a id místnosti, kde se nachází. Použij AND, protože musí platit obě podmínky současně.",
+            "answer": "SELECT jmeno, id_mistnosti FROM roboti WHERE barva = 'bila' AND jmeno LIKE 'P%';",
             "keywords": ["AND", "LIKE"],
             "strict_rules": []
         }
